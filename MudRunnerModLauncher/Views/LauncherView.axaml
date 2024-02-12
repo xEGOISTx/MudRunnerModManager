@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:MudRunnerModLauncher.ViewModels"
+			 xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"			
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
+             x:Class="MudRunnerModLauncher.Views.LauncherView"
+             x:DataType="vm:LauncherViewModel">
+	<Design.DataContext>
+		<vm:LauncherViewModel />
+	</Design.DataContext>
+
+	<Grid RowDefinitions="auto, *" 
+		  Margin="2" 
+		  IsEnabled="{Binding !IsBusy}">
+		<Border BorderThickness="2" 
+				BorderBrush="Gray"
+				CornerRadius="5">
+			<Expander HorizontalAlignment="Stretch" 
+					  Padding="1">
+				<Expander.HeaderTemplate>
+					<DataTemplate>
+						<TextBlock Text="Выбрать путь к корневой папке MudRunner"
+								   HorizontalAlignment="Center"/>
+					</DataTemplate>
+				</Expander.HeaderTemplate>
+
+				<Grid ColumnDefinitions="*, auto"
+					  Margin="0,2,0,0">
+					<TextBox HorizontalAlignment="Stretch"
+							 VerticalAlignment="Top"
+							 Text="{Binding MRRootDirectory}"/>
+						
+					<Button Grid.Column="1"						
+							Content="Обзор"
+							VerticalAlignment="Top"
+							Margin="2,0,0,0"
+							HorizontalAlignment="Stretch"
+							HorizontalContentAlignment="Center"
+							Command="{Binding BrowseMRRootDirCommand}"/>				
+				</Grid>		
+			</Expander>			
+		</Border>
+
+
+		<Border Grid.Row="1"
+				BorderThickness="2"
+				BorderBrush="Gray"
+				CornerRadius="5"
+				Margin="0,2,0,0">
+			
+			<Grid RowDefinitions="*, auto"
+				  ColumnDefinitions="*, *">
+				<Grid.Styles>
+					<Style Selector="Button">
+						<Setter Property="HorizontalAlignment" Value="Stretch"/>
+						<Setter Property="HorizontalContentAlignment" Value="Center"/>
+						<Setter Property="Margin" Value="0,2,0,0"/>
+					</Style>
+				</Grid.Styles>
+
+				<ListBox Grid.ColumnSpan="2"
+						 ItemsSource="{Binding AddedMods}"
+						 SelectedItem="{Binding SelectedMod}"
+						 MinHeight="120">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}"/>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+
+				</ListBox>
+
+				<Button Grid.Row="1" 
+						VerticalAlignment="Bottom" 
+						Content="Добавить"
+						Command="{Binding AddModCommand}"/>
+				
+				<Button Grid.Row="1" 
+						Grid.Column="1" 
+						VerticalAlignment="Bottom" 
+						Content="Удалить"
+						Command="{Binding DeleteModCommand}"/>
+
+			</Grid>			
+		</Border>
+		
+		<progRing:ProgressRing Grid.RowSpan="2"
+			Width="80"
+			Height="80"
+			IsActive="{Binding IsBusy}"
+			HorizontalAlignment="Center"
+			VerticalAlignment="Center"
+			Foreground="Gray"/>
+
+	</Grid>
+</UserControl>
