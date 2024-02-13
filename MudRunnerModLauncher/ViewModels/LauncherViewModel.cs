@@ -6,9 +6,11 @@ using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace MudRunnerModLauncher.ViewModels;
@@ -35,6 +37,7 @@ public class LauncherViewModel : ViewModelBase
 
 		AddModCommand = ReactiveCommand.Create(AddMod, this.WhenAnyValue(vm => vm.IsCorrectMRRootDir, isCorrect => isCorrect == true));
 		DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as DirectoryInfo != null));
+		OpenGitHubLinkCommand = ReactiveCommand.Create(OpenGitHubLink);
 
 		this.WhenAnyValue(vm => vm.MRRootDirectory).Subscribe(x => this.RaisePropertyChanged(nameof(IsCorrectMRRootDir)));
 		
@@ -80,6 +83,8 @@ public class LauncherViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Task> AddModCommand { get; private set; }
 
 	public ReactiveCommand<Unit, Unit> DeleteModCommand { get; private set; }
+	 
+	public ReactiveCommand<Unit, Unit> OpenGitHubLinkCommand { get; private set; }
 
 
 	private async Task BrowseMRRootDir()
@@ -158,6 +163,15 @@ public class LauncherViewModel : ViewModelBase
 		}
 
 		return string.Empty;
+	}
+
+	//https://github.com/dotnet/runtime/issues/17938
+	private void OpenGitHubLink()
+	{
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		{
+			Process.Start(new ProcessStartInfo("cmd", $"/c start https://github.com/xEGOISTx/MudRunnerModLauncher"));
+		}
 	}
 
 	private async void RefreshAddedMods()

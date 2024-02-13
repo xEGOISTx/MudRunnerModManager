@@ -68,6 +68,8 @@ namespace MudRunnerModLauncher.Models
 
 				var allEntKeys = GetAllEntryKeysWithoutDirs(mod);
 				var modDirs = GetOnlyModDirs(allEntKeys);
+				if (!modDirs.Any())
+					return;
 				DirectoryInfo modDectinationDir = new DirectoryInfo($@"{GetModsDir()}\{System.IO.Path.GetFileNameWithoutExtension(mod.Name)}");
 				ExtractFiles(mod, modDectinationDir, modDirs);
 

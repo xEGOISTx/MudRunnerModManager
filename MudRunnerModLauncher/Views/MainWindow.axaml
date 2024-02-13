@@ -10,8 +10,8 @@
         Title="MudRunnerModLauncher"
 		MinHeight="300"
 		MinWidth="400"
-		Height="400"
-		Width="500"
+		Height="500"
+		Width="600"
 		WindowStartupLocation="CenterScreen">
 	<views:LauncherView />
 </Window>
