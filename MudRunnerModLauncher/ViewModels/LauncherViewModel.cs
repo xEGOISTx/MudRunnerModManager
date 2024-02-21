@@ -64,6 +64,10 @@ public class LauncherViewModel : ViewModelBase
 			{
 				_model.SaveMudRunnerRoorDir(value);
 				this.RaisePropertyChanged(nameof(MRRootDirectory));
+				if (_model.IsCorrectMRRootDir)
+				{
+					RefreshAddedMods();
+				}
 			}
 		}
 	}
