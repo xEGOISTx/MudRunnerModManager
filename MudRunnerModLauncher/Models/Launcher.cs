@@ -12,17 +12,12 @@ namespace MudRunnerModLauncher.Models
 {
 	public class Launcher
 	{
-		private const string MODS_DIR_NAME = "MRMLauncherMods";
-		private const string MEDIA = "Media";
-		private const string MUD_RUNNER_EXE = "MudRunner.exe";
-		private const string CONFIG_XML = "Config.xml";
-
-		private readonly DirectoryInfo _tempDir = new DirectoryInfo($@"{Environment.CurrentDirectory}\Temp");
 
 		private readonly HashSet<string> _modRootFolders =
 		[
 			"billboards",
 			"classes",
+			"joysticks",
 			"levels",
 			"scripts",
 			"sounds",
@@ -33,13 +28,10 @@ namespace MudRunnerModLauncher.Models
 			"_templates"
 		];
 
-		private readonly DirectoryPathLoader _directoryPathLoader ;
 
-
-		public Launcher(DirectoryPathLoader? directoryPathLoader = null)
+		public Launcher()
 		{
-			_directoryPathLoader = directoryPathLoader ?? new DirectoryPathLoader();
-			MudRunnerRoorDir = _directoryPathLoader.Load();
+			MudRunnerRoorDir = MRRootDirLoader.Load();
 		}
 
 
@@ -47,16 +39,33 @@ namespace MudRunnerModLauncher.Models
 
 		public string[] AvailableExts { get; } = ["*.zip", "*.rar", "*.7z", "*.tar"];
 
-
 		public void SaveMudRunnerRoorDir(string mRRootDir)
 		{
-			_directoryPathLoader.Save(mRRootDir);
-			MudRunnerRoorDir = _directoryPathLoader.Load();
+			MRRootDirLoader.Save(mRRootDir);
+			MudRunnerRoorDir = MRRootDirLoader.Load();
+
+			//на всякий случай скопируем конфиг пользователя. в будущем может не понадобится
+			if(IsCorrectMRRootDir)
+			{
+				var dir = new DirectoryInfo(@$"{AppPaths.AppDataDir}\cb");
+				var file = new FileInfo(@$"{AppPaths.AppDataDir}\\cb\\{AppConsts.CONFIG_XML}");
+
+				if(!dir.Exists)
+				{
+					dir.Create();
+				}
+				
+				if(!file.Exists)
+				{
+					var userConf = new FileInfo(@$"{MudRunnerRoorDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
+					userConf.CopyTo(file.FullName);
+				}
+			}
 		}
 
 		public bool IsCorrectMRRootDir => !string.IsNullOrEmpty(MudRunnerRoorDir) 
-											&& File.Exists(@$"{MudRunnerRoorDir.Trim([' ', '\\'])}\{MUD_RUNNER_EXE}")
-											&& File.Exists(@$"{MudRunnerRoorDir.Trim([' ', '\\'])}\{CONFIG_XML}");
+											&& File.Exists(@$"{MudRunnerRoorDir.Trim([' ', '\\'])}\{AppConsts.MUD_RUNNER_EXE}")
+											&& File.Exists(@$"{MudRunnerRoorDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
 
 
 		public async Task AddModAsync(FileInfo mod)
@@ -106,11 +115,43 @@ namespace MudRunnerModLauncher.Models
 			});
 		}
 
-		private DirectoryInfo GetModsDir()
+		public async Task<bool> IsPresentCache()
 		{
-			return new DirectoryInfo($@"{MudRunnerRoorDir}\{MEDIA}\{MODS_DIR_NAME}");
+			return await Task.Run(() =>
+			{
+				if(AppPaths.MudRunnerCacheDir.Exists)
+				{
+					if (AppPaths.MudRunnerCacheDir.GetDirectories().Length > 0 || AppPaths.MudRunnerCacheDir.GetFiles().Length > 0)
+						return true;
+				}
+
+				return false;
+			});
 		}
 
+		public async Task ClearCache()
+		{
+			await Task.Run(() =>
+			{
+				if (AppPaths.MudRunnerCacheDir.Exists)
+				{
+					foreach(var dir in AppPaths.MudRunnerCacheDir.GetDirectories())
+					{
+						dir.Delete(true);
+					}
+
+					foreach(var file in AppPaths.MudRunnerCacheDir.GetFiles())
+					{
+						file.Delete();
+					}
+				}
+			});
+		}
+
+		private DirectoryInfo GetModsDir()
+		{
+			return new DirectoryInfo($@"{MudRunnerRoorDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
+		}
 
 		private void AddModPathToConfig(DirectoryInfo modDir)
 		{
@@ -121,7 +162,7 @@ namespace MudRunnerModLauncher.Models
 				return;
 
 			allElements.Add(addElem);
-			FileInfo config = CreateConfig(allElements, _tempDir);
+			FileInfo config = CreateConfig(allElements, AppPaths.AppTempDir);
 
 			config.CopyTo($@"{MudRunnerRoorDir}\{config.Name}", true);
 			config.Delete();			
@@ -131,7 +172,7 @@ namespace MudRunnerModLauncher.Models
 		{
 			ConfigElement delElem = CreateMediaPathElement(modDir);
 			IEnumerable<ConfigElement> elements =  GetAllConfigElements().Where(elem => elem != delElem);
-			FileInfo config = CreateConfig(elements, _tempDir);
+			FileInfo config = CreateConfig(elements, AppPaths.AppTempDir);
 
 			config.CopyTo($@"{MudRunnerRoorDir}\{config.Name}", true);
 			config.Delete();
@@ -140,7 +181,7 @@ namespace MudRunnerModLauncher.Models
 		private ConfigElement CreateMediaPathElement(DirectoryInfo modDir)
 		{
 			var elem = new ConfigElement("MediaPath");
-			elem.Attributes.Add(new ConfigElementAttribute("Path", @$"{MEDIA}\{MODS_DIR_NAME}\{modDir.Name}"));
+			elem.Attributes.Add(new ConfigElementAttribute("Path", @$"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}"));
 			return elem;
 		}
 
@@ -149,7 +190,7 @@ namespace MudRunnerModLauncher.Models
 			if (!IsCorrectMRRootDir)
 				return [];
 
-			string confPath = $@"{MudRunnerRoorDir}\{CONFIG_XML}";
+			string confPath = $@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}";
 			List<ConfigElement> elements = [];
 
 			using (Stream stream = File.OpenRead(confPath))
@@ -187,7 +228,7 @@ namespace MudRunnerModLauncher.Models
 			if(!destinationDir.Exists)
 				destinationDir.Create();
 
-			string confPath = @$"{destinationDir.FullName}\{CONFIG_XML}";
+			string confPath = @$"{destinationDir.FullName}\{AppConsts.CONFIG_XML}";
 
 			if(File.Exists(confPath))
 				File.Delete(confPath);
@@ -395,10 +436,10 @@ namespace MudRunnerModLauncher.Models
 			OrigKey = entryKey;
 			FormatKey = OrigKey.Replace('/', '\\');
 			Parts = FormatKey.Split('\\');
-			Root = Parts.FirstOrDefault() ?? string.Empty;			
+			Root = Parts.First() ?? string.Empty;			
 		}
 
-		public string? Root { get; } = string.Empty;
+		public string Root { get; } = string.Empty;
 		public string OrigKey { get; } = string.Empty;
 		public string FormatKey {  get; } = string.Empty;
 		public string[] Parts { get; }

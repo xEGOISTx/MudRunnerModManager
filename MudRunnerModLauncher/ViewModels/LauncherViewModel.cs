@@ -12,6 +12,16 @@ using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using MsBox.Avalonia.Enums;
+using Avalonia.Platform;
+using Avalonia;
+using Avalonia.Media.Imaging;
+
+
+
 
 namespace MudRunnerModLauncher.ViewModels;
 
@@ -40,7 +50,7 @@ public class LauncherViewModel : ViewModelBase
 		OpenGitHubLinkCommand = ReactiveCommand.Create(OpenGitHubLink);
 
 		this.WhenAnyValue(vm => vm.MRRootDirectory).Subscribe(x => this.RaisePropertyChanged(nameof(IsCorrectMRRootDir)));
-		
+
 		RefreshAddedMods();
 	}
 
@@ -103,9 +113,74 @@ public class LauncherViewModel : ViewModelBase
 			return;
 
 		await BusyAction(async () =>
-		{		
-			await _model.AddModAsync(new FileInfo(modPath));
-			RefreshAddedMods();
+		{
+			try
+			{
+				var mod = new FileInfo(modPath);
+				await _model.AddModAsync(mod);
+			
+				if(await _model.IsPresentCache())
+				{
+					string msbCacheText = $"Удалить кеш из: \"{AppPaths.MudRunnerCacheDir}\"?";
+
+					var msbCache = MessageBoxManager.GetMessageBoxCustom(
+						new MessageBoxCustomParams
+						{
+							ButtonDefinitions = new List<ButtonDefinition>
+							{
+								new ButtonDefinition { Name = "Да", },
+								new ButtonDefinition { Name = "Нет", },
+							},
+							WindowIcon = GetLogo(),
+							ContentTitle = "",
+							ContentMessage = msbCacheText,
+							Icon = MsBox.Avalonia.Enums.Icon.Question,
+							WindowStartupLocation = WindowStartupLocation.CenterOwner,
+							CanResize = false,
+							MaxWidth = 500,
+							MaxHeight = 800,
+							SizeToContent = SizeToContent.WidthAndHeight,
+							ShowInCenter = true,
+							Topmost = false,
+						});
+
+					var res = await msbCache.ShowWindowDialogAsync(MainWindow.Instsnce);
+					if (res == "Да")
+					{
+						await _model.ClearCache();
+					}
+				}
+
+				RefreshAddedMods();
+
+				var msb = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
+				{
+					WindowIcon = GetLogo(),
+					ContentTitle = "",
+					ContentMessage = $"Мод \"{Path.GetFileNameWithoutExtension(mod.Name)}\" добавлен",
+					ButtonDefinitions = ButtonEnum.Ok,
+					Icon = Icon.Success,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner
+				});
+
+
+				await msb.ShowWindowDialogAsync(MainWindow.Instsnce);
+			}
+			catch (Exception ex)
+			{
+				var msb = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
+				{
+					WindowIcon = GetLogo(),
+					ContentTitle = "",
+					ContentMessage = ex.Message,
+					ButtonDefinitions = ButtonEnum.Ok,
+					Icon = Icon.Error,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner
+				});
+
+				await msb.ShowWindowDialogAsync(MainWindow.Instsnce);
+			}
+
 		});
 	}
 
@@ -113,12 +188,30 @@ public class LauncherViewModel : ViewModelBase
 	{
 		await BusyAction(async () =>
 		{
-			if (SelectedMod != null)
+			try
 			{
-				await _model.DeleteModAsync(SelectedMod);
+				if (SelectedMod != null)
+				{
+					await _model.DeleteModAsync(SelectedMod);
+				}
+				SelectedMod = null;
+				RefreshAddedMods();
 			}
-			SelectedMod = null;
-			RefreshAddedMods();
+			catch (Exception ex)
+			{
+				var msb = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
+				{
+					WindowIcon = new WindowIcon(@$"{Environment.CurrentDirectory}\logo.ico"),
+					ContentTitle = "",
+					ContentMessage = ex.Message,
+					ButtonDefinitions = ButtonEnum.Ok,
+					Icon = Icon.Error,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner
+				});
+
+				await msb.ShowWindowDialogAsync(MainWindow.Instsnce);
+			}
+
 		});
 	}
 
@@ -195,6 +288,12 @@ public class LauncherViewModel : ViewModelBase
 		IsBusy = true;
 		await action();
 		IsBusy = false;
+	}
+
+	//пока так
+	private WindowIcon GetLogo()
+	{
+		return new WindowIcon(AssetLoader.Open(new Uri("avares://MudRunnerModLauncher/Assets/logo.ico")));
 	}
 }
 
