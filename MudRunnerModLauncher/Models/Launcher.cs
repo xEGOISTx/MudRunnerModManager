@@ -230,10 +230,7 @@ namespace MudRunnerModLauncher.Models
 
 			string confPath = @$"{destinationDir.FullName}\{AppConsts.CONFIG_XML}";
 
-			if(File.Exists(confPath))
-				File.Delete(confPath);
-
-			using (Stream stream = File.OpenWrite(confPath))
+			using (Stream stream = File.Create(confPath))
 			{
 				XmlWriterSettings settings = new XmlWriterSettings();
 				settings.Async = true;

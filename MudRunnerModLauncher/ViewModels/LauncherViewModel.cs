@@ -17,11 +17,7 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MsBox.Avalonia.Enums;
 using Avalonia.Platform;
-using Avalonia;
-using Avalonia.Media.Imaging;
-
-
-
+using Res = MudRunnerModLauncher.Lang.Resource;
 
 namespace MudRunnerModLauncher.ViewModels;
 
@@ -40,7 +36,7 @@ public class LauncherViewModel : ViewModelBase
 			x => x.IsCorrectMRRootDir,
 			(dir, isCorrect) => string.IsNullOrWhiteSpace(dir) || isCorrect == true);
 
-		this.ValidationRule(vm => vm.MRRootDirectory, validateMRRootDir, "Не верный путь!");
+		this.ValidationRule(vm => vm.MRRootDirectory, validateMRRootDir, Res.WrongPath);
 
 
 		BrowseMRRootDirCommand = ReactiveCommand.Create(BrowseMRRootDir);
@@ -125,15 +121,15 @@ public class LauncherViewModel : ViewModelBase
 			
 				if(await _model.IsPresentCache())
 				{
-					string msbCacheText = $"Удалить кеш из: \"{AppPaths.MudRunnerCacheDir}\"?";
+					string msbCacheText = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
 
 					var msbCache = MessageBoxManager.GetMessageBoxCustom(
 						new MessageBoxCustomParams
 						{
 							ButtonDefinitions = new List<ButtonDefinition>
 							{
-								new ButtonDefinition { Name = "Да", },
-								new ButtonDefinition { Name = "Нет", },
+								new ButtonDefinition { Name = Res.Yes, },
+								new ButtonDefinition { Name = Res.No, },
 							},
 							WindowIcon = GetLogo(),
 							ContentTitle = "",
@@ -149,7 +145,7 @@ public class LauncherViewModel : ViewModelBase
 						});
 
 					var res = await msbCache.ShowWindowDialogAsync(MainWindow.Instsnce);
-					if (res == "Да")
+					if (res == Res.Yes)
 					{
 						await _model.ClearCache();
 					}
@@ -161,7 +157,7 @@ public class LauncherViewModel : ViewModelBase
 				{
 					WindowIcon = GetLogo(),
 					ContentTitle = "",
-					ContentMessage = $"Мод \"{Path.GetFileNameWithoutExtension(mod.Name)}\" добавлен",
+					ContentMessage = string.Format(Res.ModAdded, Path.GetFileNameWithoutExtension(mod.Name)),
 					ButtonDefinitions = ButtonEnum.Ok,
 					Icon = Icon.Success,
 					WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -227,7 +223,7 @@ public class LauncherViewModel : ViewModelBase
 		{
 			var folder = (await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
 			{
-				Title = "Выбор папки",
+				Title = Res.SelectFolder,
 				AllowMultiple = false
 			})).FirstOrDefault();
 
@@ -248,7 +244,7 @@ public class LauncherViewModel : ViewModelBase
 		{
 			var file = (await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
 			{
-				Title = "Выбор файла",
+				Title = Res.SelectFile,
 				AllowMultiple = false,
 				FileTypeFilter = new List<FilePickerFileType> { new FilePickerFileType(null) {Patterns = _model.AvailableExts } }
 			})).FirstOrDefault();
