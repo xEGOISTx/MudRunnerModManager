@@ -1,4 +1,5 @@
-﻿using SharpCompress.Archives.SevenZip;
+﻿using MudRunnerModLauncher.Models.XmlWorker;
+using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 using System;
@@ -10,8 +11,9 @@ using System.Xml;
 
 namespace MudRunnerModLauncher.Models
 {
-	public class Launcher
+    public class Launcher
 	{
+		private readonly ConfigManager _configManager = new();
 
 		private readonly HashSet<string> _modRootFolders =
 		[
@@ -70,7 +72,7 @@ namespace MudRunnerModLauncher.Models
 
 		public async Task AddModAsync(FileInfo mod)
 		{
-			await Task.Run(() =>
+			await Task.Run(async () =>
 			{
 				if (!mod.Exists || !IsCorrectMRRootDir)
 					return;
@@ -79,10 +81,9 @@ namespace MudRunnerModLauncher.Models
 				var modDirs = GetOnlyModDirs(allEntKeys);
 				if (!modDirs.Any())
 					return;
-				DirectoryInfo modDectinationDir = new DirectoryInfo($@"{GetModsDir()}\{System.IO.Path.GetFileNameWithoutExtension(mod.Name)}");
+				DirectoryInfo modDectinationDir = new($@"{GetModsDir()}\{System.IO.Path.GetFileNameWithoutExtension(mod.Name)}");
 				ExtractFiles(mod, modDectinationDir, modDirs);
-
-				AddModPathToConfig(modDectinationDir);
+				await _configManager.AddModPath(modDectinationDir, new FileInfo($@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}"));
 
 				ModFileCorrection(modDectinationDir);
 			});
@@ -90,10 +91,13 @@ namespace MudRunnerModLauncher.Models
 
 		public async Task DeleteModAsync(DirectoryInfo mod)
 		{
-			await Task.Run(() =>
+			await Task.Run(async () =>
 			{
+				if (!mod.Exists || !IsCorrectMRRootDir)
+					return;
+
 				Directory.Delete(mod.FullName, true);
-				DeleteModPathFromConfig(mod);
+				await _configManager.DeleteModPath(mod, new FileInfo($@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}"));
 			});
 		}
 
@@ -151,120 +155,6 @@ namespace MudRunnerModLauncher.Models
 		private DirectoryInfo GetModsDir()
 		{
 			return new DirectoryInfo($@"{MudRunnerRoorDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
-		}
-
-		private void AddModPathToConfig(DirectoryInfo modDir)
-		{
-			ConfigElement addElem = CreateMediaPathElement(modDir);
-			List<ConfigElement> allElements = GetAllConfigElements();
-
-			if (allElements.Any(elem => elem == addElem))
-				return;
-
-			allElements.Add(addElem);
-			FileInfo config = CreateConfig(allElements, AppPaths.AppTempDir);
-
-			config.CopyTo($@"{MudRunnerRoorDir}\{config.Name}", true);
-			config.Delete();			
-		}
-
-		private void DeleteModPathFromConfig(DirectoryInfo modDir)
-		{
-			ConfigElement delElem = CreateMediaPathElement(modDir);
-			IEnumerable<ConfigElement> elements =  GetAllConfigElements().Where(elem => elem != delElem);
-			FileInfo config = CreateConfig(elements, AppPaths.AppTempDir);
-
-			config.CopyTo($@"{MudRunnerRoorDir}\{config.Name}", true);
-			config.Delete();
-		}
-
-		private ConfigElement CreateMediaPathElement(DirectoryInfo modDir)
-		{
-			var elem = new ConfigElement("MediaPath");
-			elem.Attributes.Add(new ConfigElementAttribute("Path", @$"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}"));
-			return elem;
-		}
-
-		private List<ConfigElement> GetAllConfigElements()
-		{
-			if (!IsCorrectMRRootDir)
-				return [];
-
-			string confPath = $@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}";
-			List<ConfigElement> elements = [];
-
-			using (Stream stream = File.OpenRead(confPath))
-			{
-				XmlReaderSettings settings = new XmlReaderSettings();
-				settings.Async = true;
-
-				using (XmlReader reader = XmlReader.Create(stream, settings))
-				{
-					while (reader.Read())
-					{
-						if (reader.NodeType == XmlNodeType.Element)
-						{
-							ConfigElement element = new ConfigElement(reader.Name);
-
-							if (reader.AttributeCount > 0)
-							{
-								while (reader.MoveToNextAttribute())
-								{
-									element.Attributes.Add(new ConfigElementAttribute(reader.Name, reader.Value));
-								}
-							}
-
-							elements.Add(element);
-						}
-					}
-				}
-			}
-
-			return elements;
-		}
-
-		private FileInfo CreateConfig(IEnumerable<ConfigElement> elements, DirectoryInfo destinationDir)
-		{
-			if(!destinationDir.Exists)
-				destinationDir.Create();
-
-			string confPath = @$"{destinationDir.FullName}\{AppConsts.CONFIG_XML}";
-
-			using (Stream stream = File.Create(confPath))
-			{
-				XmlWriterSettings settings = new XmlWriterSettings();
-				settings.Async = true;
-				settings.OmitXmlDeclaration = true;
-				settings.Indent = true;
-				settings.IndentChars = "\t";
-
-				using (XmlWriter writer = XmlWriter.Create(stream, settings))
-				{
-					ConfigElement firstElem = elements.First();
-					writer.WriteStartElement(null, firstElem.Name, null);
-					foreach (var attribute in firstElem.Attributes)
-					{
-						writer.WriteAttributeString(null, attribute.Name, null, attribute.Value);
-					}
-
-					foreach (var element in elements.Skip(1))
-					{
-						settings.NewLineOnAttributes = true;
-						writer.WriteStartElement(null, element.Name, null);
-						settings.NewLineOnAttributes = false;
-						foreach (var attribute in element.Attributes)
-						{
-							writer.WriteAttributeString(null, attribute.Name, null, attribute.Value);
-						}
-						writer.WriteEndElement();
-					}
-
-					writer.WriteEndElement();
-					writer.Flush();
-				}
-			}
-
-			return new FileInfo(confPath);
 		}
 
 		private void ModFileCorrection(DirectoryInfo modRootDir)
