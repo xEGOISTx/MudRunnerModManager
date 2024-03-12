@@ -97,11 +97,47 @@ namespace MudRunnerModLauncher.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Удалить мод &quot;{0}&quot;?.
+        /// </summary>
+        public static string DeleteMod {
+            get {
+                return ResourceManager.GetString("DeleteMod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Введите название мода.
+        /// </summary>
+        public static string EnterModName {
+            get {
+                return ResourceManager.GetString("EnterModName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Имя не может быть пустым и не должно содержать \ / : ; , * ? $ &lt; &gt; | +.
+        /// </summary>
+        public static string InvalidModName {
+            get {
+                return ResourceManager.GetString("InvalidModName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Мод &quot;{0}&quot; добавлен.
         /// </summary>
         public static string ModAdded {
             get {
                 return ResourceManager.GetString("ModAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ModRunner ModLauncher.
+        /// </summary>
+        public static string ModRunnerModLauncherTitle {
+            get {
+                return ResourceManager.GetString("ModRunnerModLauncherTitle", resourceCulture);
             }
         }
         
@@ -120,6 +156,15 @@ namespace MudRunnerModLauncher.Lang {
         public static string No {
             get {
                 return ResourceManager.GetString("No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Переименовать.
+        /// </summary>
+        public static string Rename {
+            get {
+                return ResourceManager.GetString("Rename", resourceCulture);
             }
         }
         

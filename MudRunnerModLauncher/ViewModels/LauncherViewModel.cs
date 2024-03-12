@@ -18,6 +18,9 @@ using MsBox.Avalonia.Models;
 using MsBox.Avalonia.Enums;
 using Avalonia.Platform;
 using Res = MudRunnerModLauncher.Lang.Resource;
+using MudRunnerModLauncher.AdditionalWindows;
+using System.Text.RegularExpressions;
+using Splat.ModeDetection;
 
 namespace MudRunnerModLauncher.ViewModels;
 
@@ -41,8 +44,10 @@ public class LauncherViewModel : ViewModelBase
 
 		BrowseMRRootDirCommand = ReactiveCommand.Create(BrowseMRRootDir);
 
+		var canExec = this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as DirectoryInfo != null);
 		AddModCommand = ReactiveCommand.Create(AddMod, this.WhenAnyValue(vm => vm.IsCorrectMRRootDir, isCorrect => isCorrect == true));
-		DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as DirectoryInfo != null));
+		DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, canExec);
+		RenameModCommand = ReactiveCommand.Create(RenameMod, canExec);
 		OpenGitHubLinkCommand = ReactiveCommand.Create(OpenGitHubLink);
 
 		this.WhenAnyValue(vm => vm.MRRootDirectory).Subscribe(x => this.RaisePropertyChanged(nameof(IsCorrectMRRootDir)));
@@ -93,7 +98,9 @@ public class LauncherViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Task> AddModCommand { get; private set; }
 
 	public ReactiveCommand<Unit, Unit> DeleteModCommand { get; private set; }
-	 
+
+	public ReactiveCommand<Unit, Task> RenameModCommand { get; private set; }
+
 	public ReactiveCommand<Unit, Unit> OpenGitHubLinkCommand { get; private set; }
 
 
@@ -112,12 +119,18 @@ public class LauncherViewModel : ViewModelBase
 		if (string.IsNullOrEmpty(modPath))
 			return;
 
+		var mod = new FileInfo(modPath);
+		var renameRes = await ShowRenameDialog(Path.GetFileNameWithoutExtension(mod.Name));
+		if (!renameRes.OK)
+			return;
+
+		string modName = renameRes.Text;
+
 		await BusyAction(async () =>
 		{
 			try
-			{
-				var mod = new FileInfo(modPath);
-				await _model.AddModAsync(mod);
+			{			
+				await _model.AddModAsync(mod, modName);
 			
 				if(await _model.IsPresentCache())
 				{
@@ -132,11 +145,12 @@ public class LauncherViewModel : ViewModelBase
 								new ButtonDefinition { Name = Res.No, },
 							},
 							WindowIcon = GetLogo(),
-							ContentTitle = "",
+							ContentTitle = Res.ModRunnerModLauncherTitle,
 							ContentMessage = msbCacheText,
-							Icon = MsBox.Avalonia.Enums.Icon.Question,
+							Icon = Icon.Question,
 							WindowStartupLocation = WindowStartupLocation.CenterOwner,
 							CanResize = false,
+							MinWidth = 350,
 							MaxWidth = 500,
 							MaxHeight = 800,
 							SizeToContent = SizeToContent.WidthAndHeight,
@@ -156,11 +170,12 @@ public class LauncherViewModel : ViewModelBase
 				var msb = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
 				{
 					WindowIcon = GetLogo(),
-					ContentTitle = "",
-					ContentMessage = string.Format(Res.ModAdded, Path.GetFileNameWithoutExtension(mod.Name)),
+					ContentTitle = Res.ModRunnerModLauncherTitle,
+					ContentMessage = string.Format(Res.ModAdded, modName),
 					ButtonDefinitions = ButtonEnum.Ok,
 					Icon = Icon.Success,
-					WindowStartupLocation = WindowStartupLocation.CenterOwner
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					MinWidth = 350
 				});
 
 
@@ -171,11 +186,12 @@ public class LauncherViewModel : ViewModelBase
 				var msb = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
 				{
 					WindowIcon = GetLogo(),
-					ContentTitle = "",
+					ContentTitle = Res.ModRunnerModLauncherTitle,
 					ContentMessage = ex.Message,
 					ButtonDefinitions = ButtonEnum.Ok,
 					Icon = Icon.Error,
-					WindowStartupLocation = WindowStartupLocation.CenterOwner
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					MinWidth = 350
 				});
 
 				await msb.ShowWindowDialogAsync(MainWindow.Instsnce);
@@ -188,12 +204,40 @@ public class LauncherViewModel : ViewModelBase
 	{
 		await BusyAction(async () =>
 		{
+			if (SelectedMod == null)
+				return;
+
+			string msbCacheText = string.Format(Res.DeleteMod, SelectedMod.Name);
+
+			var msbCache = MessageBoxManager.GetMessageBoxCustom(
+				new MessageBoxCustomParams
+				{
+					ButtonDefinitions = new List<ButtonDefinition>
+					{
+								new ButtonDefinition { Name = Res.Yes, },
+								new ButtonDefinition { Name = Res.No, },
+					},
+					WindowIcon = GetLogo(),
+					ContentTitle = Res.ModRunnerModLauncherTitle,
+					ContentMessage = msbCacheText,
+					Icon = Icon.Question,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					CanResize = false,
+					MinWidth = 350,
+					MaxWidth = 500,
+					MaxHeight = 800,
+					SizeToContent = SizeToContent.WidthAndHeight,
+					ShowInCenter = true,
+					Topmost = false,
+				});
+
+			var res = await msbCache.ShowWindowDialogAsync(MainWindow.Instsnce);
+			if (res != Res.Yes)
+				return;
+
 			try
 			{
-				if (SelectedMod != null)
-				{
-					await _model.DeleteModAsync(SelectedMod);
-				}
+				await _model.DeleteModAsync(SelectedMod);
 				SelectedMod = null;
 				RefreshAddedMods();
 			}
@@ -201,18 +245,50 @@ public class LauncherViewModel : ViewModelBase
 			{
 				var msb = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
 				{
-					WindowIcon = new WindowIcon(@$"{Environment.CurrentDirectory}\logo.ico"),
-					ContentTitle = "",
+					WindowIcon = GetLogo(),
+					ContentTitle = Res.ModRunnerModLauncherTitle,
 					ContentMessage = ex.Message,
 					ButtonDefinitions = ButtonEnum.Ok,
 					Icon = Icon.Error,
-					WindowStartupLocation = WindowStartupLocation.CenterOwner
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					MinWidth = 350
 				});
 
 				await msb.ShowWindowDialogAsync(MainWindow.Instsnce);
 			}
 
 		});
+	}
+
+	private async Task RenameMod()
+	{
+		if (SelectedMod == null)
+			return;
+
+		var renameRes = await ShowRenameDialog(SelectedMod.Name);
+		if (!renameRes.OK)
+			return;
+
+		await _model.RenameMod(SelectedMod, renameRes.Text);
+		RefreshAddedMods();
+	}
+
+	private async Task<TexInputBoxResult> ShowRenameDialog(string defaultModName)
+	{
+		bool IsValidText(string text)
+		{
+			var val = text.Trim();
+			string pattern = @"[^\w\.\s@-]";
+			var res = Regex.IsMatch(val, pattern);
+			return !res;
+		}
+
+		TextInputBox textInputBox = new(
+			Res.EnterModName, 
+			defaultModName, 
+			vm => vm.WhenAnyValue(x => x.Text, text => !string.IsNullOrWhiteSpace(text) && IsValidText(text)), Res.InvalidModName);
+
+		return await textInputBox.ShowDialog(MainWindow.Instsnce);
 	}
 
 	private async Task<string> OpenFolderDialog()

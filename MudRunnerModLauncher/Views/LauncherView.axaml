@@ -52,7 +52,7 @@
 				Margin="0,2,0,0">
 			
 			<Grid RowDefinitions="auto, *, auto, auto"
-				  ColumnDefinitions="*, *">
+				  ColumnDefinitions="*, *, *">
 				<Grid.Styles>
 					<Style Selector="Button">
 						<Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -62,13 +62,13 @@
 				</Grid.Styles>
 				
 				<TextBlock Grid.Row="0" 
-						   Grid.ColumnSpan="2"
+						   Grid.ColumnSpan="3"
 						   Text="{x:Static lang:Resource.Mods}"
 						   HorizontalAlignment="Center"
 						   Margin="0,2"/>
 
 				<ListBox Grid.Row="1"
-						 Grid.ColumnSpan="2"
+						 Grid.ColumnSpan="3"
 						 ItemsSource="{Binding AddedMods}"
 						 SelectedItem="{Binding SelectedMod}"
 						 MinHeight="120">
@@ -85,14 +85,20 @@
 						Content="{x:Static lang:Resource.Add}"
 						Command="{Binding AddModCommand}"/>
 				
+				<Button Grid.Row="2"
+						Grid.Column="1"
+						VerticalAlignment="Bottom" 
+						Content="{x:Static lang:Resource.Rename}"
+						Command="{Binding RenameModCommand}"/>
+				
 				<Button Grid.Row="2" 
-						Grid.Column="1" 
+						Grid.Column="2" 
 						VerticalAlignment="Bottom" 
 						Content="{x:Static lang:Resource.Delete}"
 						Command="{Binding DeleteModCommand}"/>
 				
 				<Button Grid.Row="3"
-						Grid.ColumnSpan="2"
+						Grid.ColumnSpan="3"
 						Content="GitHub" 
 						VerticalAlignment="Top"
 						HorizontalAlignment="Center"

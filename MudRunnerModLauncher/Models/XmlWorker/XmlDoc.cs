@@ -83,6 +83,12 @@ namespace MudRunnerModLauncher.Models.XmlWorker
 			return false;
 		}
 
+		public void RepalceXmlElem(XmlElem element, XmlElem toElement, string parentName)
+		{
+			RemoveXmlElem(element);
+			AddXmlElem(toElement, parentName);
+		}
+
 		public T? GetXmlItem<T>(Func<T, bool> condition) where T : IXmlItem
 		{
 			List<T> filteredByTypeItems = [];

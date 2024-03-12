@@ -129,14 +129,29 @@
   <data name="DeleteCacheFrom" xml:space="preserve">
     <value>Удалить кеш из: "{0}"?</value>
   </data>
+  <data name="DeleteMod" xml:space="preserve">
+    <value>Удалить мод "{0}"?</value>
+  </data>
+  <data name="EnterModName" xml:space="preserve">
+    <value>Введите название мода</value>
+  </data>
+  <data name="InvalidModName" xml:space="preserve">
+    <value>Имя не может быть пустым и не должно содержать \ / : ; , * ? $ &lt; &gt; | +</value>
+  </data>
   <data name="ModAdded" xml:space="preserve">
     <value>Мод "{0}" добавлен</value>
+  </data>
+  <data name="ModRunnerModLauncherTitle" xml:space="preserve">
+    <value>ModRunner ModLauncher</value>
   </data>
   <data name="Mods" xml:space="preserve">
     <value>Моды</value>
   </data>
   <data name="No" xml:space="preserve">
     <value>Нет</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Переименовать</value>
   </data>
   <data name="SelectFile" xml:space="preserve">
     <value>Выбор файла</value>

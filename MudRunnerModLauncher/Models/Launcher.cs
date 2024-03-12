@@ -70,7 +70,7 @@ namespace MudRunnerModLauncher.Models
 											&& File.Exists(@$"{MudRunnerRoorDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
 
 
-		public async Task AddModAsync(FileInfo mod)
+		public async Task AddModAsync(FileInfo mod, string modName)
 		{
 			await Task.Run(async () =>
 			{
@@ -81,7 +81,8 @@ namespace MudRunnerModLauncher.Models
 				var modDirs = GetOnlyModDirs(allEntKeys);
 				if (!modDirs.Any())
 					return;
-				DirectoryInfo modDectinationDir = new($@"{GetModsDir()}\{System.IO.Path.GetFileNameWithoutExtension(mod.Name)}");
+
+				DirectoryInfo modDectinationDir = new($@"{GetModsDir()}\{modName}");
 				ExtractFiles(mod, modDectinationDir, modDirs);
 				await _configManager.AddModPath(modDectinationDir, new FileInfo($@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}"));
 
@@ -99,6 +100,12 @@ namespace MudRunnerModLauncher.Models
 				Directory.Delete(mod.FullName, true);
 				await _configManager.DeleteModPath(mod, new FileInfo($@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}"));
 			});
+		}
+
+		public async Task RenameMod(DirectoryInfo mod, string modName)
+		{
+			await _configManager.ReplaceModName(mod, modName, new FileInfo($@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}"));
+			mod.MoveTo(@$"{mod.Parent}\{modName}");
 		}
 
 		public async Task<List<DirectoryInfo>> GetAddedModsAsync()
@@ -218,13 +225,13 @@ namespace MudRunnerModLauncher.Models
 			{
 				foreach (var keyInfo in keyInfos)
 				{
-					string modFileDestinatio = string.Empty;
+					string modFileDestination = string.Empty;
 					for (int i = nestingLevel; i < keyInfo.Parts.Length - 1; i++)
 					{
-						modFileDestinatio += keyInfo.Parts[i] + "\\";
+						modFileDestination += keyInfo.Parts[i] + "\\";
 					}
 
-					res.Add(keyInfo.OrigKey, modFileDestinatio.TrimEnd('\\'));
+					res.Add(keyInfo.OrigKey, modFileDestination.TrimEnd('\\'));
 				}
 			}
 
@@ -236,6 +243,15 @@ namespace MudRunnerModLauncher.Models
 			{
 				var keysGroupByRootDir = keyInfos
 					.GroupBy(keyI => keyI.Root);
+
+				var media = keysGroupByRootDir.Where(gr => gr.Key == AppConsts.MEDIA);
+				if(media.Any())
+				{
+					var temp = new List<IGrouping<string, KeyInfo>>(media);
+					temp.AddRange(keysGroupByRootDir.Where(gr => gr.Key != AppConsts.MEDIA));
+					keysGroupByRootDir = temp;
+					
+				}
 
 				bool isFind = false;
 
