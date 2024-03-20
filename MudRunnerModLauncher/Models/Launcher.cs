@@ -1,4 +1,5 @@
-﻿using MudRunnerModLauncher.Models.XmlWorker;
+﻿using MudRunnerModLauncher.Models.ArchiveWorker;
+using MudRunnerModLauncher.Models.XmlWorker;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -14,22 +15,7 @@ namespace MudRunnerModLauncher.Models
     public class Launcher
 	{
 		private readonly ConfigManager _configManager = new();
-
-		private readonly HashSet<string> _modRootFolders =
-		[
-			"billboards",
-			"classes",
-			"joysticks",
-			"levels",
-			"scripts",
-			"sounds",
-			"meshcache",
-			"texturecache",
-			"_m",
-			"_t",
-			"_templates"
-		];
-
+		private readonly ModExtractor _modExtractor = new(new ArchiveExtractor());
 
 		public Launcher()
 		{
@@ -39,7 +25,7 @@ namespace MudRunnerModLauncher.Models
 
 		public string MudRunnerRoorDir { get; private set; }
 
-		public string[] AvailableExts { get; } = ["*.zip", "*.rar", "*.7z", "*.tar"];
+		public string[] AvailableExts { get; } = ArchiveExtractor.AvailableExts;
 
 		public void SaveMudRunnerRoorDir(string mRRootDir)
 		{
@@ -77,13 +63,12 @@ namespace MudRunnerModLauncher.Models
 				if (!mod.Exists || !IsCorrectMRRootDir)
 					return;
 
-				var allEntKeys = GetAllEntryKeysWithoutDirs(mod);
-				var modDirs = GetOnlyModDirs(allEntKeys);
-				if (!modDirs.Any())
+				DirectoryInfo modDectinationDir = new($@"{GetModsDir()}\{modName}");
+
+				var res = await _modExtractor.ExtractAsync(mod, modDectinationDir);
+				if (!res)
 					return;
 
-				DirectoryInfo modDectinationDir = new($@"{GetModsDir()}\{modName}");
-				ExtractFiles(mod, modDectinationDir, modDirs);
 				await _configManager.AddModPath(modDectinationDir, new FileInfo($@"{MudRunnerRoorDir}\{AppConsts.CONFIG_XML}"));
 
 				ModFileCorrection(modDectinationDir);
@@ -183,169 +168,5 @@ namespace MudRunnerModLauncher.Models
 			}
 		}
 
-		private List<string> GetAllEntryKeysWithoutDirs(FileInfo source)
-		{
-			if(source.Extension == ".7z")
-			{
-				using (var sevenZA = SevenZipArchive.Open(source))
-				{
-					return sevenZA.Entries.Where(ent => !ent.IsDirectory).Select(entry => entry.Key).ToList();
-				}
-			}
-			else
-			{
-				List<string> res = [];
-				using (Stream stream = File.OpenRead(source.FullName))
-				using (var reader = ReaderFactory.Open(stream))
-				{
-					while (reader.MoveToNextEntry())
-					{
-						if(!reader.Entry.IsDirectory)
-						{
-							res.Add(reader.Entry.Key);
-						}
-					}
-				}
-
-				return res;
-			}
-		}
-
-		private Dictionary<string, string> GetOnlyModDirs(List<string> allEntryKeysWithoutDirs)
-		{
-			Dictionary<string, string> res = [];
-
-			IEnumerable<KeyInfo> keyInfos = allEntryKeysWithoutDirs
-				.Select(entryKey => new KeyInfo(entryKey))
-				.Where(keyI => !string.IsNullOrEmpty(keyI.Root));
-
-			int nestingLevel = 0;
-
-			void FillModDirs()
-			{
-				foreach (var keyInfo in keyInfos)
-				{
-					string modFileDestination = string.Empty;
-					for (int i = nestingLevel; i < keyInfo.Parts.Length - 1; i++)
-					{
-						modFileDestination += keyInfo.Parts[i] + "\\";
-					}
-
-					res.Add(keyInfo.OrigKey, modFileDestination.TrimEnd('\\'));
-				}
-			}
-
-			if (keyInfos.Any(keyI => _modRootFolders.Contains(keyI.Root.ToLower())))
-			{
-				FillModDirs();
-			}
-			else
-			{
-				var keysGroupByRootDir = keyInfos
-					.GroupBy(keyI => keyI.Root);
-
-				var media = keysGroupByRootDir.Where(gr => gr.Key == AppConsts.MEDIA);
-				if(media.Any())
-				{
-					var temp = new List<IGrouping<string, KeyInfo>>(media);
-					temp.AddRange(keysGroupByRootDir.Where(gr => gr.Key != AppConsts.MEDIA));
-					keysGroupByRootDir = temp;
-					
-				}
-
-				bool isFind = false;
-
-				foreach (var group in keysGroupByRootDir)
-				{
-					foreach (var keyInfo in group)
-					{
-						for (int i = 0; i < keyInfo.Parts.Length; i++)
-						{
-							if (_modRootFolders.Contains(keyInfo.Parts[i].ToLower()))
-							{
-								keyInfos = group.ToList();
-								nestingLevel = i;
-								isFind = true;
-								break;
-							}
-						}
-
-						if (isFind)
-							break;
-					}
-
-					if (isFind)
-						break;
-				}
-
-				if (isFind)
-					FillModDirs();
-			}
-			
-			return res;
-		}
-
-		private void ExtractFiles(FileInfo source, DirectoryInfo destination, Dictionary<string, string> actualModDirs)
-		{
-			foreach(var modDir in actualModDirs.Values.Distinct().Select(md => $@"{destination}\{md}"))
-			{
-				if(!Directory.Exists(modDir))
-					Directory.CreateDirectory(modDir);
-			}
-
-			void Ext(IReader reader)
-			{
-				while (reader.MoveToNextEntry())
-				{
-					if (!reader.Entry.IsDirectory)
-					{
-						if (actualModDirs.TryGetValue(reader.Entry.Key, out string? filePath))
-						{
-							string destDir = @$"{destination.FullName}\{filePath}";
-
-							reader.WriteEntryToDirectory(destDir, new ExtractionOptions()
-							{
-								Overwrite = true
-							});
-						}
-					}
-				}
-			}
-
-			if (source.Extension == ".7z")
-			{
-				using (var reader = SevenZipArchive.Open(source).ExtractAllEntries())
-				{
-					Ext(reader);
-				}
-			}
-			else
-			{
-				using (Stream stream = File.OpenRead(source.FullName))
-				{
-					using (var reader = ReaderFactory.Open(stream))
-					{
-						Ext(reader);
-					}
-				}
-			}
-		}
 	}
-
-	class KeyInfo
-	{
-		public KeyInfo(string entryKey)
-		{
-			OrigKey = entryKey;
-			FormatKey = OrigKey.Replace('/', '\\');
-			Parts = FormatKey.Split('\\');
-			Root = Parts.First() ?? string.Empty;			
-		}
-
-		public string Root { get; } = string.Empty;
-		public string OrigKey { get; } = string.Empty;
-		public string FormatKey {  get; } = string.Empty;
-		public string[] Parts { get; }
-	}
-
 }
