@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MudRunnerModManager", "MudRunnerModManager\MudRunnerModManager.csproj", "{12105135-3D2A-40D9-B098-804B9E2A4BC2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MudRunnerModManager.Desktop", "MudRunnerModManager.Desktop\MudRunnerModManager.Desktop.csproj", "{A4F30661-09AC-44F2-845A-A1DFC9D45FC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12105135-3D2A-40D9-B098-804B9E2A4BC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12105135-3D2A-40D9-B098-804B9E2A4BC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12105135-3D2A-40D9-B098-804B9E2A4BC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12105135-3D2A-40D9-B098-804B9E2A4BC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F30661-09AC-44F2-845A-A1DFC9D45FC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F30661-09AC-44F2-845A-A1DFC9D45FC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F30661-09AC-44F2-845A-A1DFC9D45FC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F30661-09AC-44F2-845A-A1DFC9D45FC0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BAF515D4-CF57-4BD5-B6AD-0283A771E1FD}
+	EndGlobalSection
+EndGlobal
