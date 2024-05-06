@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml;
 
-namespace MudRunnerModManager.Models.XmlWorker
+namespace MudRunnerModManager.Common.XmlWorker
 {
     internal class XmlElem(string name) : IXmlItem
     {
@@ -10,9 +10,9 @@ namespace MudRunnerModManager.Models.XmlWorker
 
         public List<XmlElemAttribute> Attributes { get; } = [];
 
-		public XmlNodeType NodeType => XmlNodeType.Element;
+        public XmlNodeType NodeType => XmlNodeType.Element;
 
-		public static bool operator ==(XmlElem left, XmlElem right)
+        public static bool operator ==(XmlElem left, XmlElem right)
         {
             return Equals(left, right);
         }

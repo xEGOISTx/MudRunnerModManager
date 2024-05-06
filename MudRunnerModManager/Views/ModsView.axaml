@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
+			 xmlns:vm="clr-namespace:MudRunnerModManager.ViewModels"			
+			 xmlns:lang="clr-namespace:MudRunnerModManager.Lang"
+             x:Class="MudRunnerModManager.Views.ModsView"
+			 x:DataType="vm:ModsViewModel">
+
+	<Grid Margin="2">
+
+		<Border BorderThickness="2"
+				BorderBrush="Gray"
+				CornerRadius="0,5"
+				Margin="0,2,0,0">
+
+			<Grid RowDefinitions="*, auto">
+				<Grid.Styles>
+					<Style Selector="Button">
+						<Setter Property="HorizontalAlignment" Value="Stretch"/>
+						<Setter Property="HorizontalContentAlignment" Value="Center"/>
+						<Setter Property="Margin" Value="0,2,0,0"/>
+					</Style>
+				</Grid.Styles>
+
+
+				<DataGrid ItemsSource="{Binding AddedMods}"
+						  SelectedItem="{Binding SelectedMod}"
+						  CanUserReorderColumns="False"
+						  CanUserSortColumns="False"
+						  CanUserResizeColumns="True"
+						  IsReadOnly="True"
+						  SelectionMode="Single">
+					<DataGrid.Styles>
+						<Style Selector="DataGrid:focus DataGridCell:current /template/ Grid#FocusVisual">
+							<Setter Property="IsVisible" Value="False" />
+						</Style>
+					</DataGrid.Styles>
+					<DataGrid.Columns>
+						<DataGridTextColumn Header="{x:Static lang:Resource.Name}" 
+											Binding="{Binding Name}"
+											Width="5*"/>
+						<DataGridTextColumn Header="{x:Static lang:Resource.Chapter}" 
+											Binding="{Binding Chapter}"
+											Width="5*"/>
+					</DataGrid.Columns>
+				</DataGrid>
+				
+				<Grid Grid.Row="1"
+					  RowDefinitions="auto, auto"
+					  ColumnDefinitions="*, *">
+					
+					<Button VerticalAlignment="Bottom"
+							Content="{x:Static lang:Resource.Add}"
+							Command="{Binding AddModCommand}"/>
+
+					<Button Grid.Column="1"
+							VerticalAlignment="Bottom"
+							Content="{x:Static lang:Resource.Delete}"
+							Command="{Binding DeleteModCommand}"/>
+					
+					<Button Grid.Row="1"
+							VerticalAlignment="Bottom"
+							Content="{x:Static lang:Resource.Rename}"
+							Command="{Binding RenameModCommand}"/>
+
+					<Button Grid.Row="1"
+							Grid.Column="1"
+							VerticalAlignment="Bottom"
+							Content="{x:Static lang:Resource.Relocate}"
+							Command="{Binding RelocateModCommand}"/>
+					
+				</Grid>
+				
+			</Grid>
+		</Border>
+
+	</Grid>
+</UserControl>

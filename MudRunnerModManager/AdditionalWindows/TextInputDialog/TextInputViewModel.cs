@@ -1,11 +1,11 @@
 ﻿using MudRunnerModManager.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Validation.Extensions;
-using System;
+using System.Collections.Generic;
 
-namespace MudRunnerModManager.AdditionalWindows
+namespace MudRunnerModManager.AdditionalWindows.TextInputDialog
 {
-	public class TextInputWindowViewModel : ViewModelBase
+	public class TextInputViewModel : ViewModelBase
 	{
 		private string _description = string.Empty;
 		private string _text = string.Empty;
@@ -28,10 +28,13 @@ namespace MudRunnerModManager.AdditionalWindows
 
 		public bool IsValid => ValidationContext.IsValid;
 
-		public void SetValidator(IObservable<bool>validator, string validatorMessage)
+		public void SetValidator(IEnumerable<DialogValidator> validators)
 		{
 			this.IsValid();
-			this.ValidationRule(vm => vm.Text, validator, validatorMessage);
+			foreach(var validator in validators)
+			{
+				this.ValidationRule(vm => vm.Text, validator.Rule, validator.Message);
+			}
 		}
 	}
 }

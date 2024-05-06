@@ -1,4 +1,5 @@
-﻿using SharpCompress.Archives.SevenZip;
+﻿using MudRunnerModManager.Common;
+using SharpCompress.Archives.SevenZip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MudRunnerModManager.Models.ArchiveWorker
 {
-	internal class ArchiveExtractor
+    internal class ArchiveExtractor
 	{
 		public static string[] AvailableExts { get; } = ["*.zip", "*.rar", $"*{AppConsts.SEVEN_ZIP_EXT}", "*.tar"];
 

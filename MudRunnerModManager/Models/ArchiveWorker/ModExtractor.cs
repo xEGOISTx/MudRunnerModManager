@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MudRunnerModManager.Common;
 
 namespace MudRunnerModManager.Models.ArchiveWorker
 {
-	internal class ModExtractor(ArchiveExtractor aExtractor)
+    internal class ModExtractor(ArchiveExtractor aExtractor)
 	{
 		private readonly ArchiveExtractor _aExtractor = aExtractor;
 		private readonly HashSet<string> _modRootFolders =

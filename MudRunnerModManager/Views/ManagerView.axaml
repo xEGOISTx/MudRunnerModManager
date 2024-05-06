@@ -3,137 +3,75 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:MudRunnerModManager.ViewModels"
+			 xmlns:views="clr-namespace:MudRunnerModManager.Views"
 			 xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
 			 xmlns:lang="clr-namespace:MudRunnerModManager.Lang"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"			 
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
              x:Class="MudRunnerModManager.Views.ManagerView"
              x:DataType="vm:ManagerViewModel">
 	<Design.DataContext>
 		<vm:ManagerViewModel />
 	</Design.DataContext>
 
-	<Grid RowDefinitions="auto, *" 
-		  Margin="2" 
+	<Grid RowDefinitions="*, auto"
 		  IsEnabled="{Binding !IsBusy}">
-		<Border BorderThickness="2" 
-				BorderBrush="Gray"
-				CornerRadius="5">
-			<Expander HorizontalAlignment="Stretch" 
-					  Padding="1">
-				<Expander.HeaderTemplate>
-					<DataTemplate>
-						<TextBlock Text="{x:Static lang:Resource.SelectMudRunnerRootFolder}"
-								   HorizontalAlignment="Center"/>
-					</DataTemplate>
-				</Expander.HeaderTemplate>
-
-				<Grid ColumnDefinitions="*, auto"
-					  Margin="0,7,0,0">
-					<TextBox HorizontalAlignment="Stretch"
-							 VerticalAlignment="Top"
-							 Text="{Binding MRRootDirectory}"/>
-						
-					<Button Grid.Column="1"
-							Content="{x:Static lang:Resource.Browse}"
-							VerticalAlignment="Top"
-							Margin="2,0,0,0"
-							HorizontalAlignment="Stretch"
-							HorizontalContentAlignment="Center"
-							Command="{Binding BrowseMRRootDirCommand}"/>				
-				</Grid>		
-			</Expander>			
-		</Border>
-
+		<TabControl Margin="-12,0,-12,0">
+			<TabControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<UniformGrid Rows="1" HorizontalAlignment="Stretch"/>
+				</ItemsPanelTemplate>
+			</TabControl.ItemsPanel>
+			<TabItem Header="{x:Static lang:Resource.Mods}" 
+					 FontSize="20"
+					 HorizontalContentAlignment="Center">
+				<views:ModsView DataContext="{Binding ModsVM}"/>
+			</TabItem>
+			<TabItem Header="{x:Static lang:Resource.Settings}"
+					 FontSize="20"
+					 HorizontalContentAlignment="Center"
+					 IsSelected="{Binding IsSelectedSettings}">				
+				<views:SettingsView DataContext="{Binding SettingsVM}"/>
+			</TabItem>
+		</TabControl>
 
 		<Border Grid.Row="1"
 				BorderThickness="2"
 				BorderBrush="Gray"
-				CornerRadius="5"
-				Margin="0,2,0,0">
-			
-			<Grid RowDefinitions="auto, *, auto, auto"
-				  ColumnDefinitions="*, *, *">
-				<Grid.Styles>
+				CornerRadius="5,0"
+				Margin="2,0">
+			<Button 
+			Content="GitHub"
+			VerticalAlignment="Top"
+			HorizontalAlignment="Center"
+			Command="{Binding OpenGitHubLinkCommand}"
+			Margin="0,2">
+
+				<Button.Styles>
 					<Style Selector="Button">
-						<Setter Property="HorizontalAlignment" Value="Stretch"/>
-						<Setter Property="HorizontalContentAlignment" Value="Center"/>
-						<Setter Property="Margin" Value="0,2,0,0"/>
-					</Style>
-				</Grid.Styles>
-				
-				<TextBlock Grid.Row="0" 
-						   Grid.ColumnSpan="3"
-						   Text="{x:Static lang:Resource.Mods}"
-						   HorizontalAlignment="Center"
-						   Margin="0,2"/>
-
-				<ListBox Grid.Row="1"
-						 Grid.ColumnSpan="3"
-						 ItemsSource="{Binding AddedMods}"
-						 SelectedItem="{Binding SelectedMod}"
-						 MinHeight="120">
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding Name}"/>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-
-				</ListBox>
-
-				<Button Grid.Row="2" 
-						VerticalAlignment="Bottom" 
-						Content="{x:Static lang:Resource.Add}"
-						Command="{Binding AddModCommand}"/>
-				
-				<Button Grid.Row="2"
-						Grid.Column="1"
-						VerticalAlignment="Bottom" 
-						Content="{x:Static lang:Resource.Rename}"
-						Command="{Binding RenameModCommand}"/>
-				
-				<Button Grid.Row="2" 
-						Grid.Column="2" 
-						VerticalAlignment="Bottom" 
-						Content="{x:Static lang:Resource.Delete}"
-						Command="{Binding DeleteModCommand}"/>
-				
-				<Button Grid.Row="3"
-						Grid.ColumnSpan="3"
-						Content="GitHub" 
-						VerticalAlignment="Top"
-						HorizontalAlignment="Center"
-						Command="{Binding OpenGitHubLinkCommand}"
-						Margin="0,2">
-			
-					<Button.Styles>
-						  <Style Selector="Button">
-							<Setter Property="Template">
-							  <ControlTemplate>
+						<Setter Property="Template">
+							<ControlTemplate>
 								<TextBlock Text="{TemplateBinding Content}" Foreground="{StaticResource SystemAccentColor}" >
-								  <TextBlock.Styles>
-									<Style Selector="TextBlock:pointerover">
-									  <Setter Property="Foreground" Value="{StaticResource SystemAccentColorLight1}"/>
-									</Style>
-								  </TextBlock.Styles>
+									<TextBlock.Styles>
+										<Style Selector="TextBlock:pointerover">
+											<Setter Property="Foreground" Value="{StaticResource SystemAccentColorLight1}"/>
+										</Style>
+									</TextBlock.Styles>
 								</TextBlock>
-							  </ControlTemplate>
-							</Setter>
-							<Setter Property="Background" Value="Transparent"/>
-							<Setter Property="BorderThickness" Value="0"/>
-						  </Style>		
-					</Button.Styles>		
-				</Button>
-
-			</Grid>			
+							</ControlTemplate>
+						</Setter>
+						<Setter Property="Background" Value="Transparent"/>
+						<Setter Property="BorderThickness" Value="0"/>
+					</Style>
+				</Button.Styles>
+			</Button>			
 		</Border>
-			
-		<progRing:ProgressRing Grid.RowSpan="3"
+
+		<progRing:ProgressRing Grid.RowSpan="2"
 			Width="80"
 			Height="80"
 			IsActive="{Binding IsBusy}"
 			HorizontalAlignment="Center"
 			VerticalAlignment="Center"
 			Foreground="Gray"/>
-
 	</Grid>
 </UserControl>

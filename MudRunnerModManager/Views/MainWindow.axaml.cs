@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MudRunnerModManager.Views;
 
@@ -10,5 +11,6 @@ public partial class MainWindow : Window
         Instsnce = this;
     }
 
-    public static MainWindow? Instsnce;
+    [AllowNull]
+    public static MainWindow Instsnce;
 }

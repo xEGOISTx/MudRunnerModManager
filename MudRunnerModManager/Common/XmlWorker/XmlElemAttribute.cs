@@ -1,4 +1,4 @@
-﻿namespace MudRunnerModManager.Models.XmlWorker
+﻿namespace MudRunnerModManager.Common.XmlWorker
 {
     internal class XmlElemAttribute(string name, string value)
     {

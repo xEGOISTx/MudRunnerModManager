@@ -1,8 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
-namespace MudRunnerModManager.AdditionalWindows
+namespace MudRunnerModManager.AdditionalWindows.TextInputDialog
 {
+	//todo: потом переделать как общее окно для диалогов с кнопками
 	public partial class TextInputWindow : Window
 	{
 		public TextInputWindow()

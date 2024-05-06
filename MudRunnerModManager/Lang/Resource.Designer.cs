@@ -70,6 +70,15 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Всегда очищать кэш.
+        /// </summary>
+        public static string AlwaysClearCache {
+            get {
+                return ResourceManager.GetString("AlwaysClearCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MudRunner mod manager.
         /// </summary>
         public static string AppName {
@@ -84,6 +93,24 @@ namespace MudRunnerModManager.Lang {
         public static string Browse {
             get {
                 return ResourceManager.GetString("Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Раздел.
+        /// </summary>
+        public static string Chapter {
+            get {
+                return ResourceManager.GetString("Chapter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Разделы.
+        /// </summary>
+        public static string Chapters {
+            get {
+                return ResourceManager.GetString("Chapters", resourceCulture);
             }
         }
         
@@ -106,11 +133,38 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Удалить раздел &quot;{0}&quot; и содержимое? .
+        /// </summary>
+        public static string DeleteChapterWithContent {
+            get {
+                return ResourceManager.GetString("DeleteChapterWithContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Удалить мод &quot;{0}&quot;?.
         /// </summary>
         public static string DeleteMod {
             get {
                 return ResourceManager.GetString("DeleteMod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Удалять моды без предупреждения.
+        /// </summary>
+        public static string DeleteModWithoutWarning {
+            get {
+                return ResourceManager.GetString("DeleteModWithoutWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Введите название раздела.
+        /// </summary>
+        public static string EnterChapterName {
+            get {
+                return ResourceManager.GetString("EnterChapterName", resourceCulture);
             }
         }
         
@@ -126,9 +180,9 @@ namespace MudRunnerModManager.Lang {
         /// <summary>
         ///   Looks up a localized string similar to Имя не может быть пустым и не должно содержать \ / : ; , * ? $ &lt; &gt; | +.
         /// </summary>
-        public static string InvalidModName {
+        public static string InvalidFolderName {
             get {
-                return ResourceManager.GetString("InvalidModName", resourceCulture);
+                return ResourceManager.GetString("InvalidFolderName", resourceCulture);
             }
         }
         
@@ -151,6 +205,33 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Имя.
+        /// </summary>
+        public static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Имя уже существует.
+        /// </summary>
+        public static string NameAlreadyExists {
+            get {
+                return ResourceManager.GetString("NameAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Имя занато разделом.
+        /// </summary>
+        public static string NameIsOccupiedByChapter {
+            get {
+                return ResourceManager.GetString("NameIsOccupiedByChapter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Нет.
         /// </summary>
         public static string No {
@@ -160,11 +241,47 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Перенести.
+        /// </summary>
+        public static string Relocate {
+            get {
+                return ResourceManager.GetString("Relocate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Переименовать.
         /// </summary>
         public static string Rename {
             get {
                 return ResourceManager.GetString("Rename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Корневой.
+        /// </summary>
+        public static string RootChapter {
+            get {
+                return ResourceManager.GetString("RootChapter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Сохранить.
+        /// </summary>
+        public static string Save {
+            get {
+                return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Выберите раздел.
+        /// </summary>
+        public static string SelectChapter {
+            get {
+                return ResourceManager.GetString("SelectChapter", resourceCulture);
             }
         }
         
@@ -187,11 +304,29 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Выбрать путь к корневой папке MudRunner.
+        ///   Looks up a localized string similar to Путь к корневой папке MudRunner.
         /// </summary>
         public static string SelectMudRunnerRootFolder {
             get {
                 return ResourceManager.GetString("SelectMudRunnerRootFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Настройки.
+        /// </summary>
+        public static string Settings {
+            get {
+                return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Настройки были изменены. Сохранить?.
+        /// </summary>
+        public static string SettingsHaveBeenChangedSaveIt {
+            get {
+                return ResourceManager.GetString("SettingsHaveBeenChangedSaveIt", resourceCulture);
             }
         }
         

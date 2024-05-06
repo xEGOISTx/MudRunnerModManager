@@ -120,11 +120,20 @@
   <data name="Add" xml:space="preserve">
     <value>Добавить</value>
   </data>
+  <data name="AlwaysClearCache" xml:space="preserve">
+    <value>Всегда очищать кэш</value>
+  </data>
   <data name="AppName" xml:space="preserve">
     <value>MudRunner mod manager</value>
   </data>
   <data name="Browse" xml:space="preserve">
     <value>Обзор</value>
+  </data>
+  <data name="Chapter" xml:space="preserve">
+    <value>Раздел</value>
+  </data>
+  <data name="Chapters" xml:space="preserve">
+    <value>Разделы</value>
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
@@ -132,13 +141,22 @@
   <data name="DeleteCacheFrom" xml:space="preserve">
     <value>Удалить кеш из: "{0}"?</value>
   </data>
+  <data name="DeleteChapterWithContent" xml:space="preserve">
+    <value>Удалить раздел "{0}" и содержимое? </value>
+  </data>
   <data name="DeleteMod" xml:space="preserve">
     <value>Удалить мод "{0}"?</value>
+  </data>
+  <data name="DeleteModWithoutWarning" xml:space="preserve">
+    <value>Удалять моды без предупреждения</value>
+  </data>
+  <data name="EnterChapterName" xml:space="preserve">
+    <value>Введите название раздела</value>
   </data>
   <data name="EnterModName" xml:space="preserve">
     <value>Введите название мода</value>
   </data>
-  <data name="InvalidModName" xml:space="preserve">
+  <data name="InvalidFolderName" xml:space="preserve">
     <value>Имя не может быть пустым и не должно содержать \ / : ; , * ? $ &lt; &gt; | +</value>
   </data>
   <data name="ModAdded" xml:space="preserve">
@@ -147,11 +165,32 @@
   <data name="Mods" xml:space="preserve">
     <value>Моды</value>
   </data>
+  <data name="Name" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="NameAlreadyExists" xml:space="preserve">
+    <value>Имя уже существует</value>
+  </data>
+  <data name="NameIsOccupiedByChapter" xml:space="preserve">
+    <value>Имя занато разделом</value>
+  </data>
   <data name="No" xml:space="preserve">
     <value>Нет</value>
   </data>
+  <data name="Relocate" xml:space="preserve">
+    <value>Перенести</value>
+  </data>
   <data name="Rename" xml:space="preserve">
     <value>Переименовать</value>
+  </data>
+  <data name="RootChapter" xml:space="preserve">
+    <value>Корневой</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="SelectChapter" xml:space="preserve">
+    <value>Выберите раздел</value>
   </data>
   <data name="SelectFile" xml:space="preserve">
     <value>Выбор файла</value>
@@ -160,7 +199,13 @@
     <value>Выбор папки</value>
   </data>
   <data name="SelectMudRunnerRootFolder" xml:space="preserve">
-    <value>Выбрать путь к корневой папке MudRunner</value>
+    <value>Путь к корневой папке MudRunner</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="SettingsHaveBeenChangedSaveIt" xml:space="preserve">
+    <value>Настройки были изменены. Сохранить?</value>
   </data>
   <data name="WrongPath" xml:space="preserve">
     <value>Неверный путь!</value>

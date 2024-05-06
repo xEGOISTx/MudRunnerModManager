@@ -9,10 +9,10 @@
         Icon="/Assets/logo.ico"
 		xmlns:lang="clr-namespace:MudRunnerModManager.Lang"
         Title="{x:Static lang:Resource.AppName}"
-		MinHeight="310"
-		MinWidth="400"
+		MinHeight="425"
+		MinWidth="425"
 		Height="500"
 		Width="600"
 		WindowStartupLocation="CenterScreen">
-	<views:ManagerView />
+		<views:ManagerView />
 </Window>
