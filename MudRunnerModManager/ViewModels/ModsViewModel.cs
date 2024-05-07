@@ -19,7 +19,7 @@ namespace MudRunnerModManager.ViewModels
 	{
 		private readonly ModsModel _model;
 		private List<Mod> _addedMods = [];
-		private Mod? _selectedMod;		
+		private Mod? _selectedMod;
 
 		public ModsViewModel(ModsModel model)
 		{
@@ -204,23 +204,18 @@ namespace MudRunnerModManager.ViewModels
 				validateConditions);
 		}
 
-		private void Refresh()
-		{
-			Mod? selectedMod = SelectedMod;
-
-			AddedMods = _model.GetAddedMods()
-				.OrderBy(mod => mod.Name)
-				.ThenBy(mod => mod.Chapter).ToList();
-
-			if (selectedMod == null)
-				return;
-
-			SelectedMod = AddedMods.FirstOrDefault(dir => dir.DirInfo.FullName.TrimEnd('\\') == selectedMod.DirInfo.FullName.TrimEnd('\\'));
-		}
-
 		private async Task RefreshAsync()
 		{
-			await Task.Run(Refresh);
+			//Mod? selectedMod = SelectedMod;
+			//SelectedMod = null;
+
+			AddedMods = (await _model.GetAddedModsAsync())
+			.OrderBy(mod => mod.Name)
+			.ThenBy(mod => mod.Chapter).ToList();
+
+			//if (selectedMod == null)
+			//	return;
+			//SelectedMod = AddedMods.FirstOrDefault(dir => dir.DirInfo.FullName.TrimEnd('\\') == selectedMod.DirInfo.FullName.TrimEnd('\\'));
 		}
 
 		private void EventTube_EventPushed(object sender, EventArgs e, EventKey key)
