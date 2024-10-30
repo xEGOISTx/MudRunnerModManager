@@ -4,6 +4,7 @@ using ReactiveUI;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Res = MudRunnerModManager.Lang.Resource;
 
@@ -18,6 +19,11 @@ public class ManagerViewModel : ViewModelBase
 	public ManagerViewModel() 
 	{
 		OpenGitHubLinkCommand = ReactiveCommand.Create(OpenGitHubLink);
+
+		var ver = Assembly.GetExecutingAssembly().GetName().Version;
+		if(ver != null)
+			AppVersion = $"v{ver.Major}.{ver.Minor}.{ver.Build}";
+
 		Init();
 	}
 
@@ -47,6 +53,8 @@ public class ManagerViewModel : ViewModelBase
 		get => _isBusy;
 		set => this.RaiseAndSetIfChanged(ref _isBusy, value, nameof(IsBusy));
 	}
+
+	public string AppVersion { get; } = string.Empty;
 
 	[MemberNotNull(nameof(ModsVM), nameof(SettingsVM))]
 	private async void Init()
@@ -96,10 +104,10 @@ public class ManagerViewModel : ViewModelBase
 	{
 		if(SettingsVM != null && SettingsVM.CanSave)
 		{
-			var res = await DialogManager.ShowMessageDialog(Res.SettingsHaveBeenChangedSaveIt, MsBox.Avalonia.Enums.Icon.Question, MsgDialogButtons.YesNo);
-			if (res == MsgDialogResult.Yes)
+			var res = await DialogManager.ShowMessageDialog(Res.SettingsHaveBeenChangedSaveIt, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
+			if (res == DialogButtonResult.Yes)
 				await SettingsVM.Save();
-			if (res == MsgDialogResult.No)
+			if (res == DialogButtonResult.No)
 				SettingsVM.Refresh();
 		}
 	}

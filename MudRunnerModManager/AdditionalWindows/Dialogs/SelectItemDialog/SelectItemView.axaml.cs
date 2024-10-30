@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace MudRunnerModManager.AdditionalWindows.SelectItemDialog
+namespace MudRunnerModManager.AdditionalWindows.Dialogs.SelectItemDialog
 {
 	public partial class SelectItemView : UserControl
 	{

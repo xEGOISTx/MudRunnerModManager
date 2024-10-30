@@ -1,0 +1,133 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<Image Height="50" Width="50" Source="{StaticResource questionImage}"/>
+	</Design.PreviewWith>
+
+	<DrawingImage x:Key="questionImage" >
+		<DrawingGroup >
+			<GeometryDrawing Brush="Transparent">
+				<EllipseGeometry Rect="0,0, 128,128"/>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Transparent">
+				<PathGeometry Figures="M 33,56 
+								  A 1,1 0 0 1 95,40 
+								  C 100,90, 60,60 62,100">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Gray">
+				<EllipseGeometry Rect="56,104, 12,12"/>
+			</GeometryDrawing>
+		</DrawingGroup>		
+	</DrawingImage>
+
+	<DrawingImage x:Key="warningImage">
+		<DrawingGroup >
+			<GeometryDrawing Brush="Yellow">
+				<PathGeometry Figures="M 0,128
+								  L 64,0
+								  L 128, 128 Z"/>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray" LineJoin="Round"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Gray">
+				<PathGeometry Figures="M 59,40
+								  L 69,40
+								  L 64,98 Z">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="6" Brush="Gray" LineJoin="Round"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Gray">
+				<EllipseGeometry Rect="58.5,104, 11,11"/>
+			</GeometryDrawing>
+		</DrawingGroup>
+	</DrawingImage>
+
+	<DrawingImage x:Key="errorImage">
+		<DrawingGroup >
+			<GeometryDrawing Brush="Red">
+				<EllipseGeometry Rect="0,0, 128,128"/>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing >
+				<PathGeometry Figures="M 30,30 
+								  L 100,95">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Black"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing >
+				<PathGeometry Figures="M 30,95
+								  L 100,30">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Black"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+		</DrawingGroup>
+	</DrawingImage>
+
+	<DrawingImage x:Key="infoImage">
+		<DrawingGroup >
+			<GeometryDrawing Brush="Transparent">
+				<EllipseGeometry Rect="0,0, 128,128"/>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Gray">
+				<EllipseGeometry Rect="58.1,20, 12,12" />
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Transparent">
+				<PathGeometry Figures="M 64,45 
+								  L 64, 105">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray" LineCap="Round"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+		</DrawingGroup>
+	</DrawingImage>
+
+	<DrawingImage x:Key="successImage">
+		<DrawingGroup >
+			<GeometryDrawing Brush="Green">
+				<EllipseGeometry Rect="0,0, 128,128"/>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Transparent">
+				<PathGeometry Figures="M 38,60 
+								  L 64,95
+								  L 90,25">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray" LineJoin="Miter"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+		</DrawingGroup>
+	</DrawingImage>
+		
+</ResourceDictionary>

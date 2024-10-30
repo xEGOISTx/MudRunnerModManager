@@ -3,16 +3,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
-             x:Class="MudRunnerModManager.AdditionalWindows.SelectItemDialog.SelectItemView">
+             x:Class="MudRunnerModManager.AdditionalWindows.Dialogs.SelectItemDialog.SelectItemView">
 	<Grid RowDefinitions="auto, auto">
 		
-		<TextBlock Text="{Binding Description}"
-				   MaxWidth="350"/>
+		<TextBlock Text="{Binding Description}"/>
 		
 		<ComboBox Grid.Row="1" 
 				  ItemsSource="{Binding Items}"
 				  SelectedItem="{Binding SelectedItem}"
-				  MinWidth="350"
-				  HorizontalAlignment="Stretch"/>
+				  HorizontalAlignment="Stretch"
+				  DisplayMemberBinding="{Binding DisplayValue}">
+
+	</ComboBox>
+
 	</Grid>
 </UserControl>

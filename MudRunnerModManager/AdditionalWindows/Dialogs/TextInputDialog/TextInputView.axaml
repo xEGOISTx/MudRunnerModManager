@@ -3,13 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="150"
-             x:Class="MudRunnerModManager.AdditionalWindows.TextInputDialog.TextInputView">
+             x:Class="MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog.TextInputView">
 	<Grid RowDefinitions="auto, auto" >
 		
 		<TextBlock Text="{Binding Description}"/>
 
 		<TextBox Grid.Row="1" 
-				 Text="{Binding Text}"
-				 MinWidth="350"/>
+				 Text="{Binding Text}"/>
 	</Grid>
 </UserControl>

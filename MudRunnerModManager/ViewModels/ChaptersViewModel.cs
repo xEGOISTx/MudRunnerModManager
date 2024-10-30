@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
 using System.Reactive;
-using MudRunnerModManager.AdditionalWindows.TextInputDialog;
 using MudRunnerModManager.Common;
 using Res = MudRunnerModManager.Lang.Resource;
 
@@ -67,10 +66,10 @@ namespace MudRunnerModManager.ViewModels
 		private async Task Add()
 		{
 			var res = await ShowRenameDialog("");
-			if (!res.OK)
+			if (res.Result != DialogButtonResult.OK)
 				return;
 
-			var delCh = DeletedChapters.FirstOrDefault(ch => ch.Name == res.Text);
+			var delCh = DeletedChapters.FirstOrDefault(ch => ch.Name == res.Name);
 			if (delCh != null)
 			{
 				DeletedChapters.Remove(delCh);
@@ -78,7 +77,7 @@ namespace MudRunnerModManager.ViewModels
 			}
 			else
 			{
-				Chapters.Add(new ChapterViewModel(res.Text));
+				Chapters.Add(new ChapterViewModel(res.Name));
 			}
 
 			OnChanged();
@@ -92,8 +91,8 @@ namespace MudRunnerModManager.ViewModels
 			if(!SelectedChapter.IsNew)
 			{
 				var message = string.Format(Res.DeleteChapterWithContent, SelectedChapter.Name);
-				var res = await DialogManager.ShowMessageDialog(message, MsBox.Avalonia.Enums.Icon.Question, MsgDialogButtons.YesNo);
-				if (res == MsgDialogResult.No)
+				var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
+				if (res != DialogButtonResult.OK)
 					return;
 
 				DeletedChapters.Add(SelectedChapter);
@@ -117,15 +116,15 @@ namespace MudRunnerModManager.ViewModels
 				return;
 
 			var res = await ShowRenameDialog(SelectedChapter.Name);
-			if (!res.OK)
+			if (res.Result != DialogButtonResult.OK)
 				return;
 
-			SelectedChapter.Name = res.Text;
+			SelectedChapter.Name = res.Name;
 
 			OnChanged();
 		}
 
-		private async Task<TexInputBoxResult> ShowRenameDialog(string defaultChapterName)
+		private async Task<RenameDialogResult> ShowRenameDialog(string defaultChapterName)
 		{
 			return await DialogManager.ShowRenameFolderDialog(
 				defaultChapterName,

@@ -1,5 +1,4 @@
-﻿using MsBox.Avalonia.Enums;
-using MudRunnerModManager.Common;
+﻿using MudRunnerModManager.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +20,7 @@ namespace MudRunnerModManager.ViewModels
 			}
 			catch(Exception ex)
 			{
-				await DialogManager.ShowMessageDialog(ex.Message, Icon.Error, MsgDialogButtons.OK);
+				await DialogManager.ShowMessageDialog(ex.Message, DialogManager.OK, AdditionalWindows.Dialogs.DialogImage.Error);
 			}
 			finally
 			{

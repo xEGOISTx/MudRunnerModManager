@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:textInput="clr-namespace:MudRunnerModManager.AdditionalWindows.TextInputDialog"
-			 xmlns:selectItem="clr-namespace:MudRunnerModManager.AdditionalWindows.SelectItemDialog"
+			 xmlns:textInput="clr-namespace:MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog"
+			 xmlns:selectItem="clr-namespace:MudRunnerModManager.AdditionalWindows.Dialogs.SelectItemDialog"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"			 
              x:Class="MudRunnerModManager.AdditionalWindows.AddModDialog.AddModView">
 	<Grid RowDefinitions="auto, auto"

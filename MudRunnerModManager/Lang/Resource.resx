@@ -177,6 +177,9 @@
   <data name="No" xml:space="preserve">
     <value>Нет</value>
   </data>
+  <data name="OK" xml:space="preserve">
+    <value>ОК</value>
+  </data>
   <data name="Relocate" xml:space="preserve">
     <value>Перенести</value>
   </data>
@@ -212,5 +215,8 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Да</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
   </data>
 </root>

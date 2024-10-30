@@ -1,32 +1,23 @@
-﻿using MudRunnerModManager.AdditionalWindows.SelectItemDialog;
-using MudRunnerModManager.AdditionalWindows.TextInputDialog;
+﻿using MudRunnerModManager.AdditionalWindows.Dialogs.SelectItemDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog;
 using MudRunnerModManager.ViewModels;
 using ReactiveUI;
 
 namespace MudRunnerModManager.AdditionalWindows.AddModDialog
 {
-	public class AddModViewModel : ViewModelBase
+    public class AddModViewModel : ViewModelBase
 	{
 		public AddModViewModel(TextInputViewModel textInputVM, SelectItemViewModel selectItemVM) 
 		{
 			TextInputVM = textInputVM;
 			SelectItemVM = selectItemVM;
-
-			TextInputVM.ValidationContext.PropertyChanged += ValidationContext_PropertyChanged;
+			ValidationContext.Add(TextInputVM.ValidationContext);
+			ValidationContext.Add(SelectItemVM.ValidationContext);
 		}
 
 
-		public TextInputViewModel TextInputVM { get; set; }
+		public TextInputViewModel TextInputVM { get; private set; }
 
-		public SelectItemViewModel SelectItemVM { get; set; }
-
-		public bool IsValid =>  TextInputVM.IsValid;
-
-
-		private void ValidationContext_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == nameof(TextInputVM.ValidationContext.IsValid))
-				this.RaisePropertyChanged(nameof(IsValid));
-		}
+		public SelectItemViewModel SelectItemVM { get; private set; }
 	}
 }

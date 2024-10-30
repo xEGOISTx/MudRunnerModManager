@@ -6,16 +6,16 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using MsBox.Avalonia.Enums;
 using Res = MudRunnerModManager.Lang.Resource;
-using MudRunnerModManager.AdditionalWindows.TextInputDialog;
 using MudRunnerModManager.Common;
 using MudRunnerModManager.AdditionalWindows.AddModDialog;
-using MudRunnerModManager.AdditionalWindows.SelectItemDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs.SelectItemDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs;
 
 namespace MudRunnerModManager.ViewModels
 {
-	public class ModsViewModel : BusyViewModel
+    public class ModsViewModel : BusyViewModel
 	{
 		private readonly ModsModel _model;
 		private List<Mod> _addedMods = [];
@@ -41,8 +41,6 @@ namespace MudRunnerModManager.ViewModels
 			DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, canExec);
 			RenameModCommand = ReactiveCommand.Create(RenameMod, canExec);
 			RelocateModCommand = ReactiveCommand.Create(RelocateMod, canExecRelocate);
-
-			//this.WhenAnyValue(vm => vm.MRRootDirectory).Subscribe(x => this.RaisePropertyChanged(nameof(IsCorrectMRRootDir)));
 
 			Task.Run(async () => await BusyAction(async () => await RefreshAsync()));
 		}
@@ -93,8 +91,8 @@ namespace MudRunnerModManager.ViewModels
 					{
 						string message = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
 
-						var res = await DialogManager.ShowMessageDialog(message, Icon.Question, MsgDialogButtons.YesNo);
-						if (res == MsgDialogResult.Yes)
+						var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
+						if (res == DialogButtonResult.Yes)
 						{
 							await _model.ClearCache();
 						}
@@ -107,7 +105,7 @@ namespace MudRunnerModManager.ViewModels
 
 				await RefreshAsync();
 
-				await DialogManager.ShowMessageDialog(string.Format(Res.ModAdded, res.ModName), Icon.Success, MsgDialogButtons.OK);
+				await DialogManager.ShowMessageDialog(string.Format(Res.ModAdded, res.ModName), DialogManager.OK, DialogImage.Success);
 			});
 		}
 
@@ -119,8 +117,8 @@ namespace MudRunnerModManager.ViewModels
 			if(!_model.Settings.DeleteModWithoutWarning)
 			{
 				string message = string.Format(Res.DeleteMod, SelectedMod.Name);
-				var res = await DialogManager.ShowMessageDialog(message, Icon.Question, MsgDialogButtons.YesNo);
-				if (res != MsgDialogResult.Yes)
+				var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
+				if (res != DialogButtonResult.Yes)
 					return;
 			}
 
@@ -138,12 +136,12 @@ namespace MudRunnerModManager.ViewModels
 				return;
 
 			var renameRes = await ShowRenameDialog(SelectedMod);
-			if (!renameRes.OK)
+			if (renameRes.Result != DialogButtonResult.OK)
 				return;
 
 			await BusyAction(async () =>
 			{
-				await _model.RenameModAsync(SelectedMod, renameRes.Text);
+				await _model.RenameModAsync(SelectedMod, renameRes.Name);
 				await RefreshAsync();
 			});
 		}
@@ -158,19 +156,19 @@ namespace MudRunnerModManager.ViewModels
 
 			var chapterLowerNames = new HashSet<string>(chaptersDic.Keys.Select(chName => chName.ToLower()));
 
-			var conditionNameAlreadyExists = new SelectItemValidateCondition(
-				vm => vm.WhenAnyValue(vm => vm.SelectedItem, si => si != null && !chaptersDic[si].Mods.Contains(SelectedMod.Name)), 
+			var conditionNameAlreadyExists = new SelectItemUserValidationCondition<string>(
+				si => si != null && !chaptersDic[si].Mods.Contains(SelectedMod.Name), 
 				Res.NameAlreadyExists);
 
-			var conditionNameIsOccupiedByChapter = new SelectItemValidateCondition(
-				vm => vm.WhenAnyValue(vm => vm.SelectedItem, si => si != Res.RootChapter || !chapterLowerNames.Contains(SelectedMod.Name.ToLower())),
+			var conditionNameIsOccupiedByChapter = new SelectItemUserValidationCondition<string>(
+				si => si != Res.RootChapter || !chapterLowerNames.Contains(SelectedMod.Name.ToLower()),
 				Res.NameIsOccupiedByChapter);
 
 			var res = await DialogManager.ShowSelectItemDialog(chaptersDic.Keys,
 				Res.SelectChapter,
 				[conditionNameAlreadyExists, conditionNameIsOccupiedByChapter]);
 
-			if (!res.OK)
+			if (res.Result != DialogButtonResult.OK)
 				return;
 
 			DirectoryInfo selectedChapter = res.SelectedItem == Res.RootChapter 
@@ -184,15 +182,15 @@ namespace MudRunnerModManager.ViewModels
 			});
 		}
 
-		private async Task<TexInputBoxResult> ShowRenameDialog(Mod mod)
+		private async Task<RenameDialogResult> ShowRenameDialog(Mod mod)
 		{
-			List<TextInputValidateCondition>? validateConditions = null;
+			List<TextInputValidationCondition>? validateConditions = null;
 
 			if(mod.Chapter == Res.RootChapter)
 			{
 				var chapterNames = _model.Settings.Chapters.Select(ch => ch.Name.ToLower()).ToHashSet();
-				var conditionForRoorDir = new TextInputValidateCondition(
-					vm => vm.WhenAnyValue(vm => vm.Text, modName => !chapterNames.Contains(modName.ToLower())), Res.NameIsOccupiedByChapter);
+				var conditionForRoorDir = new TextInputValidationCondition(
+					 modName => !chapterNames.Contains(modName.ToLower()), Res.NameIsOccupiedByChapter);
 
 				validateConditions = [conditionForRoorDir];
 			}

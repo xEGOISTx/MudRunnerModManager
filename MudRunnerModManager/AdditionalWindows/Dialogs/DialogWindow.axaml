@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
+        x:Class="MudRunnerModManager.AdditionalWindows.Dialogs.DialogWindow"
+		xmlns:lang="clr-namespace:MudRunnerModManager.Lang">
+	<Grid RowDefinitions="auto, *"
+		  Margin="5">
+
+		<Grid ColumnDefinitions="auto, *">
+			<Image Name="imgPres" 
+				   MaxHeight="50" 
+				   MaxWidth="50"
+				   VerticalAlignment="Center"/>
+			<ContentPresenter Grid.Column="1" Name="contPres"
+							  VerticalAlignment="Center"/>
+		</Grid>
+
+		
+		<StackPanel Grid.Row="1"
+					Name="buttonsPanel"
+					Orientation="Horizontal"
+					HorizontalAlignment="Right"
+					VerticalAlignment="Bottom"
+					Margin="0,10,0,0">		
+		</StackPanel>		
+	</Grid>
+
+</Window>
+
+<!--SizeToContent="WidthAndHeight"
+CanResize="False"
+Icon="/Assets/logo.ico"
+Title="{x:Static lang:Resource.AppName}"-->
+

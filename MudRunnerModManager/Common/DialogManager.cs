@@ -1,14 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia.Models;
-using MsBox.Avalonia;
-using MudRunnerModManager.AdditionalWindows.TextInputDialog;
 using MudRunnerModManager.Models.ArchiveWorker;
 using MudRunnerModManager.Views;
-using ReactiveUI;
-using Splat.ModeDetection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,44 +10,88 @@ using System.Threading.Tasks;
 using Res = MudRunnerModManager.Lang.Resource;
 using Avalonia.Platform;
 using MudRunnerModManager.AdditionalWindows.AddModDialog;
-using MudRunnerModManager.AdditionalWindows.SelectItemDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs;
+using MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs.SelectItemDialog;
+using MudRunnerModManager.AdditionalWindows.Dialogs.MsgDialog;
 
 namespace MudRunnerModManager.Common
 {
-	public enum MsgDialogButtons
+    public enum MsgDialogButtons
 	{
 		OK,
 		YesNo
 	}
 
-	public enum MsgDialogResult
+	public enum DialogButtonResult
 	{
 		OK,
 		Yes,
-		No
+		No,
+		Cancel
+	}
+
+	public class DialogResult
+	{
+		public DialogButtonResult Result { get; set; }
+	}
+
+
+	public class SelectItemDialogResult<TItem> : DialogResult
+	{
+		public TItem? SelectedItem { get; set; }
+	}
+
+
+	public class RenameDialogResult : DialogResult
+	{
+		public string Name { get; init; } = string.Empty;
 	}
 
 	public class DialogManager
 	{
+		private const double BUTTON_WIDTH = 80;
+
+		public static DialogButton[] YesNo => 
+		[
+			new() { Name = Res.Yes, Width = BUTTON_WIDTH },
+			new() { Name = Res.No, Width = BUTTON_WIDTH}
+		];
+
+		public static DialogButton[] OKCancel =>
+		[
+			new() { Name = Res.OK, Width = BUTTON_WIDTH },
+			new() { Name = Res.Cancel, Width = BUTTON_WIDTH, IsCancel = true }
+		];
+
+		public static DialogButton[] OK =>
+		[
+			new() { Name = Res.OK, Width = BUTTON_WIDTH }
+		];
+
+
 		public static async Task<TexInputBoxResult> ShowTextInputDialog(
 			string defaultText, 
 			string description,
-			IEnumerable<TextInputValidateCondition> conditions)
+			DialogButton[] buttons,
+			IEnumerable<TextInputValidationCondition> conditions)
 		{
 			TextInputBox textInputBox = new(
 				defaultText,
 				description,
-				conditions);
+				buttons,
+				conditions,
+				GetDialogWindowSettings());
 
-			return await textInputBox.ShowDialog(MainWindow.Instsnce);
+			return await textInputBox.ShowDialogAsync(MainWindow.Instsnce);
 		}
 
 
-		public static async Task<TexInputBoxResult> ShowRenameFolderDialog(
+		public static async Task<RenameDialogResult> ShowRenameFolderDialog(
 			string defaultText,
 			string description,
 			HashSet<string> existFolderNames,
-			IEnumerable<TextInputValidateCondition>? validateConditions = null)
+			IEnumerable<TextInputValidationCondition>? validateConditions = null)
 		{
 
 			existFolderNames = existFolderNames.Select(n => n.ToLower()).ToHashSet();
@@ -67,16 +104,18 @@ namespace MudRunnerModManager.Common
 				return !res;
 			}
 
-			List<TextInputValidateCondition> conditions =
+			List<TextInputValidationCondition> conditions =
 			[
-				new(vm => vm.WhenAnyValue(x => x.Text, text => !string.IsNullOrWhiteSpace(text) && IsValidText(text)), Res.InvalidFolderName),
-				new(vm => vm.WhenAnyValue(x => x.Text, text => !existFolderNames.Contains(text.ToLower())), Res.NameAlreadyExists)
+				new(text => !string.IsNullOrWhiteSpace(text) && IsValidText(text), Res.InvalidFolderName),
+				new(text => !existFolderNames.Contains(text.ToLower()), Res.NameAlreadyExists)
 			];
 
 			if (validateConditions != null)
 				conditions.AddRange(validateConditions);
 
-			return await ShowTextInputDialog(defaultText, description, conditions);
+			var res = await ShowTextInputDialog(defaultText, description, OKCancel, conditions);
+
+			return new RenameDialogResult { Name = res.Text, Result = res.Result == Res.OK ? DialogButtonResult.OK : DialogButtonResult.Cancel};
 		}
 
 
@@ -123,27 +162,10 @@ namespace MudRunnerModManager.Common
 			return string.Empty;
 		}
 
-		public static async Task<MsgDialogResult> ShowMessageDialog(string message, Icon icon, MsgDialogButtons buttons)
+		public static async Task<DialogButtonResult> ShowMessageDialog(string message, DialogButton[] buttons, DialogImage dialogImage)
 		{
-			var msbCache = MessageBoxManager.GetMessageBoxCustom(
-				new MessageBoxCustomParams
-				{
-					ButtonDefinitions = GetButtons(buttons),
-					WindowIcon = GetLogo(),
-					ContentTitle = Res.AppName,
-					ContentMessage = message,
-					Icon = icon,
-					WindowStartupLocation = WindowStartupLocation.CenterOwner,
-					CanResize = false,
-					MinWidth = 350,
-					MaxWidth = 500,
-					MaxHeight = 800,
-					SizeToContent = SizeToContent.WidthAndHeight,
-					ShowInCenter = true,
-					Topmost = false,
-				});
-
-			var result = await msbCache.ShowWindowDialogAsync(MainWindow.Instsnce);
+			MsgBox msgBox = new(message, buttons, dialogImage, GetMsgDialogWindowSettings());
+			var result = await msgBox.ShowDialogAsync(MainWindow.Instsnce);
 
 			return GetResult(result);
 		}
@@ -158,50 +180,75 @@ namespace MudRunnerModManager.Common
 				return !res;
 			}
 
-			List<TextInputValidateCondition> conditions =
+			List<TextInputValidationCondition> conditions =
 			[
-				new(vm => vm.WhenAnyValue(x => x.Text, text => !string.IsNullOrWhiteSpace(text) && IsValidText(text)), Res.InvalidFolderName),
+				new(text => !string.IsNullOrWhiteSpace(text) && IsValidText(text), Res.InvalidFolderName),
 			];
 
-			AddModBox addModBox = new(defaultModName, chapters, conditions);
+			AddModBox addModBox = new(defaultModName, chapters, conditions, GetDialogWindowSettings());
 
-			return await addModBox.ShowDialog(MainWindow.Instsnce);
+			return await addModBox.ShowDialogAsync(MainWindow.Instsnce);
 		}
 
-		public static async Task<SelectItemBoxResult> ShowSelectItemDialog(IEnumerable<string> items,
+		public static async Task<SelectItemDialogResult<TItem>> ShowSelectItemDialog<TItem>(IEnumerable<TItem> items,
 			string description,
-			IEnumerable<SelectItemValidateCondition>? validateConditions = null)
+			IEnumerable<SelectItemUserValidationCondition<TItem>>? validateConditions = null)
 		{
-			SelectItemBox selectItemBox = new SelectItemBox(items, description, validateConditions);
+			SelectItemBox<TItem> selectItemBox = new(items, item => item is string value ? value : string.Empty, 
+				description,
+				OKCancel, 
+				validateConditions, 
+				GetDialogWindowSettings());
 
-			return await selectItemBox.ShowDialog(MainWindow.Instsnce);
-		}
+			var res = await selectItemBox.ShowDialogAsync(MainWindow.Instsnce);
 
-		private static List<ButtonDefinition> GetButtons(MsgDialogButtons buttons)
-		{
-			return buttons switch
+			return new SelectItemDialogResult<TItem>
 			{
-				MsgDialogButtons.OK => [new ButtonDefinition { Name = "OK", }],
-				MsgDialogButtons.YesNo => 
-				[
-					new ButtonDefinition { Name = Res.Yes, },
-					new ButtonDefinition { Name = Res.No, },
-				],
-				_ => [],
+				//todo: _
+				Result = res.Result == Res.OK ? DialogButtonResult.OK : DialogButtonResult.Cancel,
+				SelectedItem = res.SelectedItem,
 			};
 		}
 
-		private static MsgDialogResult GetResult(string result)
+		private static DialogButtonResult GetResult(string result)
 		{
-			if (result == "OK")
-				return MsgDialogResult.OK;
+			if (result == Res.OK)
+				return DialogButtonResult.OK;
 			else if(result ==  Res.Yes)
-				return MsgDialogResult.Yes;
+				return DialogButtonResult.Yes;
 			else if(result == Res.No)
-				return MsgDialogResult.No;
+				return DialogButtonResult.No;
+			else if (result == string.Empty || result == Res.Cancel)
+				return DialogButtonResult.Cancel;
 
-			throw new NotImplementedException();
+			throw new NotImplementedException($"{nameof(DialogManager)}. Not implemented {nameof(DialogButtonResult)} value for result \"{result}\"");
 		}
+
+		private static DialogWindowSettings GetDialogWindowSettings() 
+		{
+			return new DialogWindowSettings()
+			{
+				SizeToContent = SizeToContent.Height,
+				CanResize = false,
+				WindowIcon = GetLogo(),
+				WindowTitle = Res.AppName,
+				WindowStartupLocation = WindowStartupLocation.CenterOwner,
+				MaxWidth = 350
+			};
+		}
+
+		private static DialogWindowSettings GetMsgDialogWindowSettings()
+		{
+			return new DialogWindowSettings()
+			{
+				CanResize = false,
+				WindowIcon = GetLogo(),
+				WindowTitle = Res.AppName,
+				WindowStartupLocation = WindowStartupLocation.CenterOwner,
+				MaxWidth = 700
+			};
+		}
+
 
 		//пока так
 		private static WindowIcon GetLogo()
