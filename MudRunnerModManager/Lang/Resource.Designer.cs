@@ -259,6 +259,15 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Открыть папку.
+        /// </summary>
+        public static string OpenFolder {
+            get {
+                return ResourceManager.GetString("OpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Перенести.
         /// </summary>
         public static string Relocate {

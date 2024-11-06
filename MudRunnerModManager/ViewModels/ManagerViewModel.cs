@@ -114,4 +114,20 @@ public class ManagerViewModel : ViewModelBase
 
 }
 
+//			using (var client = new HttpClient())
+//			{
+//				using HttpRequestMessage request = new (HttpMethod.Get, "https://api.github.com/repos/owner/repo/releases/latest");
+//				request.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36");
+//				request.Headers.Add("Accept", "application/vnd.github+json");
+//				request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
 
+//				var resp = await client.SendAsync(request);
+
+//string ress = await resp.Content.ReadAsStringAsync();
+//JsonNode? obj = JsonNode.Parse(ress);
+//				if (obj != null) 
+//				{
+//					string? version = (string?)obj["tag_name"];
+//				}
+				
+//			}

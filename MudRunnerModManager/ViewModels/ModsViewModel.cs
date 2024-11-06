@@ -15,7 +15,7 @@ using MudRunnerModManager.AdditionalWindows.Dialogs;
 
 namespace MudRunnerModManager.ViewModels
 {
-    public class ModsViewModel : BusyViewModel
+	public class ModsViewModel : BusyViewModel
 	{
 		private readonly ModsModel _model;
 		private List<Mod> _addedMods = [];
@@ -33,7 +33,7 @@ namespace MudRunnerModManager.ViewModels
 			//	(dir, isCorrect) => string.IsNullOrWhiteSpace(dir) || isCorrect == true);
 
 			//this.ValidationRule(vm => vm.MRRootDirectory, validateMRRootDir, Res.WrongPath);
-			
+
 
 			var canExec = this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as Mod != null);
 			var canExecRelocate = this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as Mod != null && _model.Settings.Chapters.Count > 0);//&& () == true
@@ -41,6 +41,7 @@ namespace MudRunnerModManager.ViewModels
 			DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, canExec);
 			RenameModCommand = ReactiveCommand.Create(RenameMod, canExec);
 			RelocateModCommand = ReactiveCommand.Create(RelocateMod, canExecRelocate);
+			OpenModFolderCommand = ReactiveCommand.Create(OpenModFolder, canExec);
 
 			Task.Run(async () => await BusyAction(async () => await RefreshAsync()));
 		}
@@ -65,8 +66,9 @@ namespace MudRunnerModManager.ViewModels
 
 		public ReactiveCommand<Unit, Task> RenameModCommand { get; private set; }
 
-		public ReactiveCommand<Unit, Task> RelocateModCommand {  get; private set; }
+		public ReactiveCommand<Unit, Task> RelocateModCommand { get; private set; }
 
+		public ReactiveCommand<Unit, Unit> OpenModFolderCommand { get; private set; }
 
 		private async Task AddMod()
 		{
@@ -87,7 +89,7 @@ namespace MudRunnerModManager.ViewModels
 
 				if (await _model.IsPresentCache())
 				{
-					if(!_model.Settings.AlwaysClearCache)
+					if (!_model.Settings.AlwaysClearCache)
 					{
 						string message = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
 
@@ -114,7 +116,7 @@ namespace MudRunnerModManager.ViewModels
 			if (SelectedMod == null)
 				return;
 
-			if(!_model.Settings.DeleteModWithoutWarning)
+			if (!_model.Settings.DeleteModWithoutWarning)
 			{
 				string message = string.Format(Res.DeleteMod, SelectedMod.Name);
 				var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
@@ -157,7 +159,7 @@ namespace MudRunnerModManager.ViewModels
 			var chapterLowerNames = new HashSet<string>(chaptersDic.Keys.Select(chName => chName.ToLower()));
 
 			var conditionNameAlreadyExists = new SelectItemUserValidationCondition<string>(
-				si => si != null && !chaptersDic[si].Mods.Contains(SelectedMod.Name), 
+				si => si != null && !chaptersDic[si].Mods.Contains(SelectedMod.Name),
 				Res.NameAlreadyExists);
 
 			var conditionNameIsOccupiedByChapter = new SelectItemUserValidationCondition<string>(
@@ -171,8 +173,8 @@ namespace MudRunnerModManager.ViewModels
 			if (res.Result != DialogButtonResult.OK)
 				return;
 
-			DirectoryInfo selectedChapter = res.SelectedItem == Res.RootChapter 
-				? new(@$"{_model.Settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}") 
+			DirectoryInfo selectedChapter = res.SelectedItem == Res.RootChapter
+				? new(@$"{_model.Settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}")
 				: _model.Settings.Chapters.First(ch => ch.Name == res.SelectedItem);
 
 			await BusyAction(async () =>
@@ -182,11 +184,17 @@ namespace MudRunnerModManager.ViewModels
 			});
 		}
 
+		private void OpenModFolder()
+		{
+			if (SelectedMod != null && Directory.Exists(SelectedMod.DirInfo.FullName))
+				System.Diagnostics.Process.Start("explorer.exe", SelectedMod.DirInfo.FullName);
+		}
+
 		private async Task<RenameDialogResult> ShowRenameDialog(Mod mod)
 		{
 			List<TextInputValidationCondition>? validateConditions = null;
 
-			if(mod.Chapter == Res.RootChapter)
+			if (mod.Chapter == Res.RootChapter)
 			{
 				var chapterNames = _model.Settings.Chapters.Select(ch => ch.Name.ToLower()).ToHashSet();
 				var conditionForRoorDir = new TextInputValidationCondition(
@@ -196,8 +204,8 @@ namespace MudRunnerModManager.ViewModels
 			}
 
 			return await DialogManager.ShowRenameFolderDialog(
-				mod.Name, 
-				Res.EnterModName, 
+				mod.Name,
+				Res.EnterModName,
 				new HashSet<string>(AddedMods.Where(m => m.Name != mod.Name && m.Chapter == mod.Chapter).Select(m => m.Name)),
 				validateConditions);
 		}
@@ -254,7 +262,7 @@ namespace MudRunnerModManager.ViewModels
 							);
 				}
 
-				if(!chapters.Any(ch => ch.Name == Res.RootChapter))
+				if (!chapters.Any(ch => ch.Name == Res.RootChapter))
 				{
 					chapters.Add
 					(

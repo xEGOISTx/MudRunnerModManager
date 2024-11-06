@@ -7,13 +7,16 @@
 			 xmlns:vm="clr-namespace:MudRunnerModManager.ViewModels"
 			 x:DataType="vm:ChaptersViewModel"
              x:Class="MudRunnerModManager.Views.CaptersView">
-	<Grid RowDefinitions="auto, *, auto"
-		  ColumnDefinitions="*, *, *">
+	<Grid RowDefinitions="auto, auto, auto, *">
 		<Grid.Styles>
 			<Style Selector="Button">
 				<Setter Property="HorizontalAlignment" Value="Stretch"/>
 				<Setter Property="HorizontalContentAlignment" Value="Center"/>
-				<Setter Property="Margin" Value="0,2,0,0"/>
+				<Setter Property="Margin" Value="5,2,0,0"/>
+				<Setter Property="Width" Value="32"/>
+				<Setter Property="Height" Value="32"/>
+				<Setter Property="Padding" Value="5"/>
+				<Setter Property="Background" Value="DarkSlateGray"/>
 			</Style>
 		</Grid.Styles>
 
@@ -23,35 +26,66 @@
 				   HorizontalAlignment="Center"
 				   Margin="0,2"/>
 
-		<ListBox Grid.Row="1"
-				 Grid.ColumnSpan="3"
-				 ItemsSource="{Binding Chapters}"
-				 SelectedItem="{Binding SelectedChapter}"
-				 MinHeight="120">
-			<ListBox.ItemTemplate>
-				<DataTemplate>
-					<TextBlock Text="{Binding Name}"/>
-				</DataTemplate>
-			</ListBox.ItemTemplate>
+		<StackPanel Grid.Row="1" 
+					HorizontalAlignment="Left"
+					VerticalAlignment="Bottom"
+					Orientation="Horizontal">
+			<Button VerticalAlignment="Bottom"
+					Command="{Binding AddCommand}"
+					ToolTip.Tip="{x:Static lang:Resource.Add}">
+				<Button.Content>
+					<Image Source="{StaticResource ResourceKey=plusImage}"/>
+				</Button.Content>
+			</Button>
 
-		</ListBox>
+			<Button VerticalAlignment="Bottom"
+					Command="{Binding RenameCommand}"
+					ToolTip.Tip="{x:Static lang:Resource.Rename}">
+				<Button.Content>
+					<Image Source="{StaticResource ResourceKey=pencilImage}"/>
+				</Button.Content>				
+			</Button>
 
-		<Button Grid.Row="2"
-				VerticalAlignment="Bottom"
-				Content="{x:Static lang:Resource.Add}"
-				Command="{Binding AddCommand}"/>
+			<Button Command="{Binding OpenChapterFolderCommand}"
+					ToolTip.Tip="{x:Static lang:Resource.OpenFolder}">
+				<Button.Content>
+					<Image Source="{StaticResource ResourceKey=folderImage}"/>
+				</Button.Content>
+			</Button>
 
-		<Button Grid.Row="2"
-				Grid.Column="1"
-				VerticalAlignment="Bottom"
-				Content="{x:Static lang:Resource.Rename}"
-				Command="{Binding RenameCommand}"/>
+			<Button VerticalAlignment="Bottom"
+					Command="{Binding RemoveCommand}"
+					ToolTip.Tip="{x:Static lang:Resource.Delete}">
+				<Button.Content>
+					<Image Source="{StaticResource ResourceKey=deleteImage}"/>
+				</Button.Content>
+			</Button>
+		</StackPanel>
 
-		<Button Grid.Row="2"
-				Grid.Column="2"
-				VerticalAlignment="Bottom"
-				Content="{x:Static lang:Resource.Delete}"
-				Command="{Binding RemoveCommand}"/>
+		<Separator Grid.Row="2"
+		   VerticalAlignment="Top"
+		   Background="Gray"
+		   Margin="0,2"/>
+		
+		<DataGrid Grid.Row="3"
+		  ItemsSource="{Binding Chapters}"
+		  SelectedItem="{Binding SelectedChapter}"
+		  CanUserReorderColumns="False"
+		  CanUserSortColumns="False"
+		  CanUserResizeColumns="True"
+		  IsReadOnly="True"
+		  SelectionMode="Single">
+			<DataGrid.Styles>
+				<Style Selector="DataGrid:focus DataGridCell:current /template/ Grid#FocusVisual">
+					<Setter Property="IsVisible" Value="False" />
+				</Style>
+			</DataGrid.Styles>
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="{x:Static lang:Resource.Name}"
+									Binding="{Binding Name}"
+									Width="*"/>
+			</DataGrid.Columns>
+		</DataGrid>
 
 	</Grid>
 </UserControl>

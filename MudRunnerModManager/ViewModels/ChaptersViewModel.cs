@@ -8,6 +8,7 @@ using ReactiveUI;
 using System.Reactive;
 using MudRunnerModManager.Common;
 using Res = MudRunnerModManager.Lang.Resource;
+using System.IO;
 
 namespace MudRunnerModManager.ViewModels
 {
@@ -24,6 +25,7 @@ namespace MudRunnerModManager.ViewModels
 			var canExec = this.WhenAnyValue(vm => vm.SelectedChapter, sch => sch as ChapterViewModel != null);
 			RemoveCommand = ReactiveCommand.Create(Remove, canExec);
 			RenameCommand = ReactiveCommand.Create(Rename, canExec);
+			OpenChapterFolderCommand = ReactiveCommand.Create(OpenChapterFolder, canExec);
 
 			//Refresh();
 		}
@@ -38,13 +40,15 @@ namespace MudRunnerModManager.ViewModels
 
 		public List<ChapterViewModel> DeletedChapters { get; } = [];
 
-		public ReactiveCommand<Unit, Task> AddCommand { get; set; }
+		public ReactiveCommand<Unit, Task> AddCommand { get; private set; }
 
-		public ReactiveCommand<Unit, Task> RemoveCommand {  get; set; }
+		public ReactiveCommand<Unit, Task> RemoveCommand {  get; private set; }
 
-		public ReactiveCommand<Unit, Task> RenameCommand { get; set; }
+		public ReactiveCommand<Unit, Task> RenameCommand { get; private set; }
 
-		public event EventHandler ChaptersChanged;
+		public ReactiveCommand<Unit, Unit> OpenChapterFolderCommand {  get; private set; }
+
+		public event EventHandler? ChaptersChanged;
 
 		public void Refresh()
 		{
@@ -122,6 +126,18 @@ namespace MudRunnerModManager.ViewModels
 			SelectedChapter.Name = res.Name;
 
 			OnChanged();
+		}
+
+		private void OpenChapterFolder()
+		{
+			if (SelectedChapter != null)
+			{
+				var dir = @$"{_settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{SelectedChapter.Name}";
+				if(Directory.Exists(dir))
+				{
+					System.Diagnostics.Process.Start("explorer.exe", dir);
+				}
+			}				
 		}
 
 		private async Task<RenameDialogResult> ShowRenameDialog(string defaultChapterName)

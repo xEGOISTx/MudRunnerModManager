@@ -15,17 +15,66 @@
 				CornerRadius="0,5"
 				Margin="0,2,0,0">
 
-			<Grid RowDefinitions="*, auto">
+			<Grid RowDefinitions="auto,auto, *">
 				<Grid.Styles>
 					<Style Selector="Button">
 						<Setter Property="HorizontalAlignment" Value="Stretch"/>
 						<Setter Property="HorizontalContentAlignment" Value="Center"/>
-						<Setter Property="Margin" Value="0,2,0,0"/>
+						<Setter Property="VerticalAlignment" Value="Center"/>
+						<Setter Property="Margin" Value="5,2,0,0"/>
+						<Setter Property="Width" Value="32"/>
+						<Setter Property="Height" Value="32"/>
+						<Setter Property="Padding" Value="5"/>
+						<Setter Property="Background" Value="DarkSlateGray"/>
 					</Style>
 				</Grid.Styles>
 
+				<StackPanel Orientation="Horizontal">
 
-				<DataGrid ItemsSource="{Binding AddedMods}"
+					<Button Command="{Binding AddModCommand}" 
+							ToolTip.Tip="{x:Static lang:Resource.Add}">
+						<Button.Content>
+							<Image Source="{StaticResource ResourceKey=plusImage}"/>						
+						</Button.Content>
+					</Button>	
+								
+					<Button Command="{Binding RelocateModCommand}"
+							ToolTip.Tip="{x:Static lang:Resource.Relocate}">
+						<Button.Content>
+							<Image Source="{StaticResource ResourceKey=arrowRightImage}"/>
+						</Button.Content>
+					</Button>
+
+					<Button Command="{Binding RenameModCommand}"
+							ToolTip.Tip="{x:Static lang:Resource.Rename}">
+						<Button.Content>
+							<Image Source="{StaticResource ResourceKey=pencilImage}"/>
+						</Button.Content>
+					</Button>
+
+					<Button Command="{Binding OpenModFolderCommand}"
+							ToolTip.Tip="{x:Static lang:Resource.OpenFolder}">
+						<Button.Content>
+							<Image Source="{StaticResource ResourceKey=folderImage}"/>
+						</Button.Content>
+					</Button>
+
+					<Button Command="{Binding DeleteModCommand}"
+							ToolTip.Tip="{x:Static lang:Resource.Delete}">						
+						<Button.Content>
+							<Image Source="{StaticResource ResourceKey=deleteImage}"/>
+						</Button.Content>
+					</Button>
+				</StackPanel>
+
+				
+				<Separator Grid.Row="1" 
+						   VerticalAlignment="Top" 
+						   Background="Gray" 
+						   Margin="0,2"/>
+				
+				<DataGrid Grid.Row="2"
+						  ItemsSource="{Binding AddedMods}"
 						  SelectedItem="{Binding SelectedMod}"
 						  CanUserReorderColumns="False"
 						  CanUserSortColumns="False"
@@ -46,33 +95,7 @@
 											Width="5*"/>
 					</DataGrid.Columns>
 				</DataGrid>
-				
-				<Grid Grid.Row="1"
-					  RowDefinitions="auto, auto"
-					  ColumnDefinitions="*, *">
-					
-					<Button VerticalAlignment="Bottom"
-							Content="{x:Static lang:Resource.Add}"
-							Command="{Binding AddModCommand}"/>
-
-					<Button Grid.Column="1"
-							VerticalAlignment="Bottom"
-							Content="{x:Static lang:Resource.Delete}"
-							Command="{Binding DeleteModCommand}"/>
-					
-					<Button Grid.Row="1"
-							VerticalAlignment="Bottom"
-							Content="{x:Static lang:Resource.Rename}"
-							Command="{Binding RenameModCommand}"/>
-
-					<Button Grid.Row="1"
-							Grid.Column="1"
-							VerticalAlignment="Bottom"
-							Content="{x:Static lang:Resource.Relocate}"
-							Command="{Binding RelocateModCommand}"/>
-					
-				</Grid>
-				
+							
 			</Grid>
 		</Border>
 

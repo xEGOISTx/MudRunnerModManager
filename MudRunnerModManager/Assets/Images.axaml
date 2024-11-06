@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Design.PreviewWith>
-		<Image Height="50" Width="50" Source="{StaticResource questionImage}"/>
+		<Image Height="50" Width="50" Source="{StaticResource folderImage}"/>
 	</Design.PreviewWith>
 
 	<DrawingImage x:Key="questionImage" >
@@ -128,6 +128,120 @@
 				</GeometryDrawing.Pen>
 			</GeometryDrawing>
 		</DrawingGroup>
+	</DrawingImage>
+
+	<DrawingImage x:Key="plusImage">
+		<GeometryDrawing Brush="Transparent">
+			<PathGeometry Figures="M 0,64
+								  L 128,64 
+								  M 64,0 
+								  L 64,128" >
+			</PathGeometry>
+			<GeometryDrawing.Pen >
+				<Pen Thickness="30" Brush="Gray" LineCap="Round"/>
+			</GeometryDrawing.Pen>
+		</GeometryDrawing>
+	</DrawingImage>
+
+	<DrawingImage x:Key="arrowRightImage">
+		<GeometryDrawing Brush="Transparent">
+			<PathGeometry Figures="M 0,64
+								  L 128,64 
+								  M 64,0
+								  L 128,64 
+								  L 64,128" >
+			</PathGeometry>
+			<GeometryDrawing.Pen >
+				<Pen Thickness="30" Brush="Gray" LineCap="Round"/>
+			</GeometryDrawing.Pen>
+		</GeometryDrawing>
+	</DrawingImage>
+
+	<DrawingImage x:Key="pencilImage">
+		<DrawingGroup >
+				<GeometryDrawing Brush="Transparent">
+					<PathGeometry Figures="M 0,128
+								  L 17,89
+								  L 106, 0
+								  L 128, 22
+								  L 39,111
+								  Z">
+					</PathGeometry>
+					<GeometryDrawing.Pen >
+						<Pen Thickness="8" Brush="Gray" LineJoin="Round"/>
+					</GeometryDrawing.Pen>
+				</GeometryDrawing>
+
+				<GeometryDrawing>
+					<PathGeometry Figures="M 17,89
+								  L 39,111
+								  M 90,16
+								  L 112,38">
+					</PathGeometry>
+					<GeometryDrawing.Pen >
+						<Pen Thickness="8" Brush="Gray" />
+					</GeometryDrawing.Pen>
+				</GeometryDrawing>
+		</DrawingGroup>
+	</DrawingImage>
+
+	<DrawingImage x:Key="deleteImage">
+		<DrawingGroup>
+			<GeometryDrawing Brush="Transparent">
+				<PathGeometry Figures="M 40,20
+								  L 44,0
+								  L 84,0
+								  L 88,20">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray" LineJoin="Round"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Transparent">
+				<RectangleGeometry Rect="0,20,128,16"/>
+				<GeometryDrawing.Pen>
+					<Pen Thickness="10" Brush="Gray" LineJoin="Round"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+
+			<GeometryDrawing Brush="Transparent">
+				<PathGeometry Figures="M 12,36
+								  L 12,128
+								  L 116,128
+								  L 116,36
+								  M 32, 56
+								  L 32, 104
+								  M 64,56
+								  L 64,104
+								  M 96,56
+								  L 96,104">
+				</PathGeometry>
+				<GeometryDrawing.Pen >
+					<Pen Thickness="10" Brush="Gray" LineCap="Round" LineJoin="Round"/>
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+		</DrawingGroup>
+	</DrawingImage>
+
+	<DrawingImage x:Key="folderImage">
+		<GeometryDrawing Brush="Transparent">
+			<PathGeometry Figures="M 0,104
+								  L 0,0
+								  L 32,0
+								  L 48,16
+								  L 104,16
+								  L 104, 48
+								  M 0,104
+								  L 32,48
+								  L 128,48
+								  L 96,104
+								  Z">
+			</PathGeometry>
+			<GeometryDrawing.Pen >
+				<Pen Thickness="10" Brush="Gray" LineJoin="Round"/>
+			</GeometryDrawing.Pen>
+		</GeometryDrawing>
 	</DrawingImage>
 		
 </ResourceDictionary>
