@@ -96,7 +96,7 @@ namespace MudRunnerModManager.ViewModels
 			{
 				var message = string.Format(Res.DeleteChapterWithContent, SelectedChapter.Name);
 				var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
-				if (res != DialogButtonResult.OK)
+				if (res != DialogButtonResult.Yes)
 					return;
 
 				DeletedChapters.Add(SelectedChapter);
