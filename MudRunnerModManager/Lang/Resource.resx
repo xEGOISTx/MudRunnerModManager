@@ -222,4 +222,7 @@
   <data name="OpenFolder" xml:space="preserve">
     <value>Открыть папку</value>
   </data>
+  <data name="UpdateAvailable" xml:space="preserve">
+    <value>Доступно обновление</value>
+  </data>
 </root>

@@ -358,6 +358,15 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Доступно обновление.
+        /// </summary>
+        public static string UpdateAvailable {
+            get {
+                return ResourceManager.GetString("UpdateAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Неверный путь!.
         /// </summary>
         public static string WrongPath {
