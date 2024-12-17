@@ -225,4 +225,28 @@
   <data name="UpdateAvailable" xml:space="preserve">
     <value>Доступно обновление</value>
   </data>
+  <data name="Size" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="NameIsOccupiedByMod" xml:space="preserve">
+    <value>Имя занято модом</value>
+  </data>
+  <data name="Byte" xml:space="preserve">
+    <value>Б</value>
+  </data>
+  <data name="KByte" xml:space="preserve">
+    <value>КБ</value>
+  </data>
+  <data name="MByte" xml:space="preserve">
+    <value>МБ</value>
+  </data>
+  <data name="GByte" xml:space="preserve">
+    <value>ГБ</value>
+  </data>
+  <data name="TByte" xml:space="preserve">
+    <value>ТБ</value>
+  </data>
+  <data name="NameMustBeDifferent" xml:space="preserve">
+    <value>Имя длжно отличаться</value>
+  </data>
 </root>

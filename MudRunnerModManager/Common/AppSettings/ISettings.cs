@@ -8,6 +8,5 @@ namespace MudRunnerModManager.Common.AppSettings
 		string MudRunnerRootDir { get; set; }
 		bool AlwaysClearCache {  get; set; }
 		bool DeleteModWithoutWarning { get; set; }
-		List<DirectoryInfo> Chapters { get; set; }
 	}
 }

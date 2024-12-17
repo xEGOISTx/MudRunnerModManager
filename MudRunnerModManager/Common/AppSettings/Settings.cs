@@ -30,16 +30,6 @@ namespace MudRunnerModManager.Common.AppSettings
             set => base.DeleteModWithoutWarning = value; 
         }
 
-		public new List<DirectoryInfo> Chapters
-        {
-            get => ChaptersI;
-            set
-            {
-                ChaptersI.Clear();
-                ChaptersI.AddRange(value);
-            }
-        }
-
 		public static async Task<Settings> GetInstance()
 		{
 			if (_instance == null)

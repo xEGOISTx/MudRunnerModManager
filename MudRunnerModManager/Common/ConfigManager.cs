@@ -7,7 +7,7 @@ using MudRunnerModManager.Common.XmlWorker;
 
 namespace MudRunnerModManager.Common
 {
-    internal class ConfigManager
+    public class ConfigManager
     {
         public async Task AddModPath(DirectoryInfo modDir, FileInfo config)
         {
@@ -34,88 +34,125 @@ namespace MudRunnerModManager.Common
                     target => target.Replace(modDir.Name, newModName),
                     true);
 
-                await SaveConfig(xmlConfig);
+                await SaveConfigAsync(xmlConfig);
             });
         }
 
-        public async Task RenameChapter(DirectoryInfo chapter, string newName, FileInfo config)
+        public void RenameChapter(DirectoryInfo chapter, string newName, FileInfo config)
         {
-            await Task.Run(async () =>
+			XmlDoc xmlConfig = new(config.FullName);
+			if (!xmlConfig.Exists)
+				return;
+
+			xmlConfig.Load();
+
+			ReplaceMediaPaths(
+				xmlConfig,
+				$@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}",
+				target => target.Replace(chapter.Name, newName),
+				true);
+
+			SaveConfig(xmlConfig);
+		}
+
+		public async Task RenameChapterAsync(DirectoryInfo chapter, string newName, FileInfo config)
+        {
+            await Task.Run(() =>
             {
-                XmlDoc xmlConfig = new(config.FullName);
-                if (!xmlConfig.Exists)
-                    return;
+				RenameChapter(chapter, newName, config);
+				//XmlDoc xmlConfig = new(config.FullName);
+				//if (!xmlConfig.Exists)
+				//    return;
 
-                await xmlConfig.LoadAsync();
+				//await xmlConfig.LoadAsync();
 
-                ReplaceMediaPaths(
-                    xmlConfig, 
-                    $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}",
-                    target => target.Replace(chapter.Name, newName),
-                    true);
+				//ReplaceMediaPaths(
+				//    xmlConfig, 
+				//    $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}",
+				//    target => target.Replace(chapter.Name, newName),
+				//    true);
 
-                await SaveConfig(xmlConfig);
-            });
+				//await SaveConfigAsync(xmlConfig);
+			});
         }
 
-		public async Task ChangeModChapter(DirectoryInfo modDir, DirectoryInfo newChapter, FileInfo config)
+		public void ChangeModChapter(DirectoryInfo modDir, DirectoryInfo newChapter, FileInfo config)
 		{
-            await Task.Run(async () =>
-            {
-                XmlDoc xmlConfig = new(config.FullName);
-                if (!xmlConfig.Exists)
-                    return;
+			XmlDoc xmlConfig = new(config.FullName);
+			if (!xmlConfig.Exists)
+				return;
 
-                await xmlConfig.LoadAsync();
+			xmlConfig.Load();
 
-                var targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Parent.Name}\{modDir.Name}";
-                var newVal = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{newChapter.Name}\{modDir.Name}";
+			var targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Parent.Name}\{modDir.Name}";
+			var newVal = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{newChapter.Name}\{modDir.Name}";
 
-				if (newChapter.Name == AppConsts.MODS_ROOT_DIR)
-                {
-					newVal = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}";
-				}
+			if (newChapter.Name == AppConsts.MODS_ROOT_DIR)
+			{
+				newVal = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}";
+			}
 
-                if(modDir.Parent.Name == AppConsts.MODS_ROOT_DIR)
-                {
-					targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}";
-				}
+			if (modDir.Parent.Name == AppConsts.MODS_ROOT_DIR)
+			{
+				targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}";
+			}
 
+			ReplaceMediaPaths(
+				xmlConfig,
+				targetPath,
+				target => newVal,
+				true);
 
-                ReplaceMediaPaths(
-                    xmlConfig,
-					targetPath,
-                    target => newVal,
-                    true);
+			SaveConfig(xmlConfig);
+		}
 
-                await SaveConfig(xmlConfig);
-            });
-        }
-
-		public async Task DeleteChapter(DirectoryInfo chapter, FileInfo config)
+        public void DeleteChapter(DirectoryInfo chapter, FileInfo config)
         {
-            await Task.Run(async () =>
+			XmlDoc xmlConfig = new(config.FullName);
+			if (!xmlConfig.Exists)
+				return;
+
+			xmlConfig.Load();
+
+			var chapterXmlElems = xmlConfig
+				.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
+				&& elem.Attributes.Count > 0
+				&& elem.Attributes.First().Name == AppConsts.PATH
+				&& elem.Attributes.First().Value.Contains($@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}"));
+
+			foreach (var xmlElem in chapterXmlElems)
+			{
+				xmlConfig.RemoveXmlElem(xmlElem);
+			}
+
+			SaveConfig(xmlConfig);
+		}
+
+		public async Task DeleteChapterAsync(DirectoryInfo chapter, FileInfo config)
+        {
+            await Task.Run(() =>
             {
-                XmlDoc xmlConfig = new(config.FullName);
-                if (!xmlConfig.Exists)
-                    return;
+				DeleteChapter(chapter, config);
+				//XmlDoc xmlConfig = new(config.FullName);
+				//if (!xmlConfig.Exists)
+				//    return;
 
-                await xmlConfig.LoadAsync();
+				//await xmlConfig.LoadAsync();
 
-                var chapterXmlElems = xmlConfig
-                    .GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
-                    && elem.Attributes.Count > 0
-                    && elem.Attributes.First().Name == AppConsts.PATH
-                    && elem.Attributes.First().Value.Contains($@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}"));
+				//var chapterXmlElems = xmlConfig
+				//    .GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
+				//    && elem.Attributes.Count > 0
+				//    && elem.Attributes.First().Name == AppConsts.PATH
+				//    && elem.Attributes.First().Value.Contains($@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}"));
 
-                foreach (var xmlElem in chapterXmlElems)
-                {
-                    xmlConfig.RemoveXmlElem(xmlElem);
-                }
+				//foreach (var xmlElem in chapterXmlElems)
+				//{
+				//    xmlConfig.RemoveXmlElem(xmlElem);
+				//}
 
 
-                await SaveConfig(xmlConfig);
-            });
+				//await SaveConfigAsync(xmlConfig);
+			});
         }
 
         //todo: временно для синхронизации со старыми версиями
@@ -135,7 +172,7 @@ namespace MudRunnerModManager.Common
 					target => target.Replace(AppConsts.MODS_ROOT_DIR_OLD, AppConsts.MODS_ROOT_DIR),
 					true);
 
-				await SaveConfig(xmlConfig);
+				await SaveConfigAsync(xmlConfig);
 			});
 		}
 
@@ -184,11 +221,11 @@ namespace MudRunnerModManager.Common
 				if (!action(xmlConfig, elem))
                     return;
 
-                await SaveConfig(xmlConfig);
+                await SaveConfigAsync(xmlConfig);
             });
         }
 
-        private async Task SaveConfig(XmlDoc xmlConfig)
+        private async Task SaveConfigAsync(XmlDoc xmlConfig)
         {
             string curPath = xmlConfig.Path;
             if(!AppPaths.AppTempDir.Exists)
@@ -200,16 +237,28 @@ namespace MudRunnerModManager.Common
             xmlConfig.Delete();
         }
 
+        private void SaveConfig(XmlDoc xmlConfig)
+        {
+			string curPath = xmlConfig.Path;
+			if (!AppPaths.AppTempDir.Exists)
+			{
+				AppPaths.AppTempDir.Create();
+			}
+			xmlConfig.Save(@$"{AppPaths.AppTempDir}\{AppConsts.CONFIG_XML}");
+			xmlConfig.Copy(curPath, true);
+			xmlConfig.Delete();
+		}
 
-        //private XmlElem CreateMediaPathElement(string modName)
-        //{
-        //    var elem = new XmlElem(AppConsts.MEDIA_PATH);
-        //    elem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, @$"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modName}"));
-        //    return elem;
-        //}
+
+		//private XmlElem CreateMediaPathElement(string modName)
+		//{
+		//    var elem = new XmlElem(AppConsts.MEDIA_PATH);
+		//    elem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, @$"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modName}"));
+		//    return elem;
+		//}
 
 
-        private void ReplaceMediaPaths(
+		private void ReplaceMediaPaths(
             XmlDoc doc, 
             string target, 
             Func<string, string> repFunc, 

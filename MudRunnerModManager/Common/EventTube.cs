@@ -9,12 +9,14 @@ namespace MudRunnerModManager.Common
 	public delegate void TubeEventHandler(object sender, EventArgs e, EventKey key);
 	public enum EventKey
 	{
-		SettingsChanged
+		SettingsChanged,
+		ChaptersChanged,
+		ModsChanged
 	}
 
 	public static class EventTube
 	{
-		public static event TubeEventHandler EventPushed;
+		public static event TubeEventHandler? EventPushed;
 
 		public static void PushEvent(object sender, EventArgs e, EventKey key)
 		{

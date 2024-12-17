@@ -21,9 +21,9 @@ namespace MudRunnerModManager.ViewModels
 		public SettingsViewModel(SettingsModel model) 
 		{
 			_model = model;
-			ChaptersVM = new ChaptersViewModel(_model.Settings);
+			//ChaptersVM = new ChaptersViewModel(_model.Settings);
 			Refresh();
-			ChaptersVM.ChaptersChanged += ChaptersVM_ChaptersChanged;
+			//ChaptersVM.ChaptersChanged += ChaptersVM_ChaptersChanged;
 
 			IObservable<bool> validateMRRootDir =
 			this.WhenAnyValue(
@@ -48,7 +48,7 @@ namespace MudRunnerModManager.ViewModels
 		}
 
 
-		public ChaptersViewModel ChaptersVM { get; }
+		//public ChaptersViewModel ChaptersVM { get; }
 
 		public string MRRootDirectory
 		{
@@ -73,8 +73,7 @@ namespace MudRunnerModManager.ViewModels
 
 		private bool NeedSave => _mRRootDirectory != _model.Settings.MudRunnerRootDir 
 			|| _alwaysClearCache != _model.Settings.AlwaysClearCache
-			|| _deleteModWithoutWarning != _model.Settings.DeleteModWithoutWarning
-			|| ChaptersVM.HasChanges();
+			|| _deleteModWithoutWarning != _model.Settings.DeleteModWithoutWarning;
 
 
 		public ReactiveCommand<Unit, Task> BrowseMRRootDirCommand { get; private set; }
@@ -86,7 +85,6 @@ namespace MudRunnerModManager.ViewModels
 			MRRootDirectory = _model.Settings.MudRunnerRootDir;
 			AlwaysClearCache = _model.Settings.AlwaysClearCache;
 			DeleteModWithoutWarning = _model.Settings.DeleteModWithoutWarning;
-			ChaptersVM.Refresh();
 		}
 
 		private void SettingsViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -117,7 +115,6 @@ namespace MudRunnerModManager.ViewModels
 
 				await _model.SynhronizeWithOldVersion();
 				await _model.Save();
-				ChaptersVM.Refresh();
 				EventTube.PushEvent(this, new EventArgs(), EventKey.SettingsChanged);
 			});
 		}
@@ -129,28 +126,28 @@ namespace MudRunnerModManager.ViewModels
 				_model.Settings.MudRunnerRootDir = MRRootDirectory;
 				_model.Settings.AlwaysClearCache = AlwaysClearCache;
 				_model.Settings.DeleteModWithoutWarning = DeleteModWithoutWarning;
-				List<DirectoryInfo> chapters = [];
+				//List<DirectoryInfo> chapters = [];
 
-				var modsRootDir = $@"{MRRootDirectory}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}";
-				foreach (var chapter in ChaptersVM.Chapters)
-				{
-					DirectoryInfo chapterInfo;
-					if (chapter.IsRenamed)
-					{
-						chapterInfo = new DirectoryInfo($@"{modsRootDir}\{chapter.OldName}");
-						await _model.RenameChapter(chapterInfo, chapter.Name);
-					}
+				//var modsRootDir = $@"{MRRootDirectory}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}";
+				//foreach (var chapter in ChaptersVM.Chapters)
+				//{
+				//	DirectoryInfo chapterInfo;
+				//	if (chapter.IsRenamed)
+				//	{
+				//		chapterInfo = new DirectoryInfo($@"{modsRootDir}\{chapter.OldName}");
+				//		await _model.RenameChapter(chapterInfo, chapter.Name);
+				//	}
 
-					chapterInfo = new DirectoryInfo($@"{modsRootDir}\{chapter.Name}");
-					chapters.Add(chapterInfo);
-				}
+				//	chapterInfo = new DirectoryInfo($@"{modsRootDir}\{chapter.Name}");
+				//	chapters.Add(chapterInfo);
+				//}
 
-				foreach (var delChapter in ChaptersVM.DeletedChapters)
-				{
-					await _model.DeleteChapter(new DirectoryInfo($@"{modsRootDir}\{delChapter.Name}"));
-				}
+				//foreach (var delChapter in ChaptersVM.DeletedChapters)
+				//{
+				//	await _model.DeleteChapter(new DirectoryInfo($@"{modsRootDir}\{delChapter.Name}"));
+				//}
 
-				_model.Settings.Chapters = chapters;
+				//_model.Settings.Chapters = chapters;
 			});
 		}
 	}

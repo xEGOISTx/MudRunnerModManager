@@ -5,8 +5,12 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
 			 xmlns:vm="clr-namespace:MudRunnerModManager.ViewModels"			
 			 xmlns:lang="clr-namespace:MudRunnerModManager.Lang"
+			 xmlns:convs="clr-namespace:MudRunnerModManager.Common.Converters"
              x:Class="MudRunnerModManager.Views.ModsView"
 			 x:DataType="vm:ModsViewModel">
+	<UserControl.Resources>
+		<convs:BytesToViewConverter x:Key="conv"/>
+	</UserControl.Resources>
 
 	<Grid Margin="2">
 
@@ -88,11 +92,20 @@
 					</DataGrid.Styles>
 					<DataGrid.Columns>
 						<DataGridTextColumn Header="{x:Static lang:Resource.Name}" 
-											Binding="{Binding Name}"
+											Binding="{Binding Name, Mode=OneWay}"
 											Width="5*"/>
 						<DataGridTextColumn Header="{x:Static lang:Resource.Chapter}" 
-											Binding="{Binding Chapter}"
+											Binding="{Binding ChapterName, Mode=OneWay}"
 											Width="5*"/>
+						<DataGridTemplateColumn Header="{x:Static lang:Resource.Size}"
+												Width="5*">
+							<DataGridTemplateColumn.CellTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Size, Converter={StaticResource conv}, Mode=OneWay}"
+											   VerticalAlignment="Center"/>
+								</DataTemplate>
+							</DataGridTemplateColumn.CellTemplate>
+						</DataGridTemplateColumn>
 					</DataGrid.Columns>
 				</DataGrid>
 							

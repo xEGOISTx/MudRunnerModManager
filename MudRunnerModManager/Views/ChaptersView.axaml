@@ -5,9 +5,22 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
 			 xmlns:lang="clr-namespace:MudRunnerModManager.Lang"
 			 xmlns:vm="clr-namespace:MudRunnerModManager.ViewModels"
+			 xmlns:convs="clr-namespace:MudRunnerModManager.Common.Converters"
 			 x:DataType="vm:ChaptersViewModel"
-             x:Class="MudRunnerModManager.Views.CaptersView">
-	<Grid RowDefinitions="auto, auto, auto, *">
+             x:Class="MudRunnerModManager.Views.ChaptersView">
+	<UserControl.Resources>
+		<convs:BytesToViewConverter x:Key="conv"/>
+	</UserControl.Resources>
+	
+	<Grid Margin="2">
+				
+		<Border BorderThickness="2"
+				BorderBrush="Gray"
+				CornerRadius="0,5"
+				Margin="0,2,0,0">
+
+			<Grid RowDefinitions="auto, auto, *">
+				
 		<Grid.Styles>
 			<Style Selector="Button">
 				<Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -19,14 +32,8 @@
 				<Setter Property="Background" Value="DarkSlateGray"/>
 			</Style>
 		</Grid.Styles>
-
-		<TextBlock Grid.Row="0"
-				   Grid.ColumnSpan="3"
-				   Text="{x:Static lang:Resource.Chapters}"
-				   HorizontalAlignment="Center"
-				   Margin="0,2"/>
-
-		<StackPanel Grid.Row="1" 
+		
+		<StackPanel Grid.Row="0" 
 					HorizontalAlignment="Left"
 					VerticalAlignment="Bottom"
 					Orientation="Horizontal">
@@ -46,7 +53,7 @@
 				</Button.Content>				
 			</Button>
 
-			<Button Command="{Binding OpenChapterFolderCommand}"
+			<Button Command="{Binding OpenFolderCommand}"
 					ToolTip.Tip="{x:Static lang:Resource.OpenFolder}">
 				<Button.Content>
 					<Image Source="{StaticResource ResourceKey=folderImage}"/>
@@ -54,7 +61,7 @@
 			</Button>
 
 			<Button VerticalAlignment="Bottom"
-					Command="{Binding RemoveCommand}"
+					Command="{Binding DeleteCommand}"
 					ToolTip.Tip="{x:Static lang:Resource.Delete}">
 				<Button.Content>
 					<Image Source="{StaticResource ResourceKey=deleteImage}"/>
@@ -62,12 +69,12 @@
 			</Button>
 		</StackPanel>
 
-		<Separator Grid.Row="2"
+		<Separator Grid.Row="1"
 		   VerticalAlignment="Top"
 		   Background="Gray"
 		   Margin="0,2"/>
 		
-		<DataGrid Grid.Row="3"
+		<DataGrid Grid.Row="2"
 		  ItemsSource="{Binding Chapters}"
 		  SelectedItem="{Binding SelectedChapter}"
 		  CanUserReorderColumns="False"
@@ -82,10 +89,22 @@
 			</DataGrid.Styles>
 			<DataGrid.Columns>
 				<DataGridTextColumn Header="{x:Static lang:Resource.Name}"
-									Binding="{Binding Name}"
+									Binding="{Binding Name, Mode=OneWay}"
 									Width="*"/>
+				
+				<DataGridTemplateColumn Header="{x:Static lang:Resource.Size}"
+										Width="*">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Size, Converter={StaticResource conv}, Mode=OneWay}"
+									   VerticalAlignment="Center"/>						
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
 			</DataGrid.Columns>
-		</DataGrid>
-
+		</DataGrid>				
+				
+			</Grid>			
+		</Border>
 	</Grid>
 </UserControl>

@@ -1,8 +1,10 @@
 ﻿using MudRunnerModManager.Common;
+using MudRunnerModManager.Common.AppRepo;
 using MudRunnerModManager.Common.AppSettings;
 using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
+using System.Threading.Tasks;
 using Res = MudRunnerModManager.Lang.Resource;
 
 namespace MudRunnerModManager.ViewModels;
@@ -22,6 +24,7 @@ public class ManagerViewModel : ViewModelBase
 
 	public ModsViewModel ModsVM { get; set; }
 	public SettingsViewModel SettingsVM { get; set; }
+	public ChaptersViewModel ChaptersVM { get; set; }
 
 	public bool IsSelectedSettings
 	{
@@ -54,7 +57,7 @@ public class ManagerViewModel : ViewModelBase
 
 	public string AppVersion { get; private set; } = string.Empty;
 
-	[MemberNotNull(nameof(ModsVM), nameof(SettingsVM))]
+	[MemberNotNull(nameof(ModsVM), nameof(SettingsVM), nameof(ChaptersVM))]
 	private async void Init()
 	{
 		var appVer = Common.AppVersion.GetVersion();
@@ -62,14 +65,23 @@ public class ManagerViewModel : ViewModelBase
 
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
 		var settings = await Settings.GetInstance();
+		await Task.Run(() => { new VersionSapport().Execute(); });
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
 
-		ModsVM = new ModsViewModel(new Models.ModsModel(settings));
+		XmlChapterInfosRepo chaptersRepo = new(AppPaths.XmlChaptersFilePath);
+
+		ModsVM = new ModsViewModel(new Models.ModsModel(chaptersRepo, settings));
 		ModsVM.BusyChanged += BusyVM_BusyChanged;
+
+		var chaptersModel = new Models.ChaptersModel(chaptersRepo, settings);
+		ChaptersVM = new ChaptersViewModel(chaptersModel);
+		ChaptersVM.BusyChanged += BusyVM_BusyChanged;
+
 		SettingsVM = new SettingsViewModel(new Models.SettingsModel(settings));
 		SettingsVM.BusyChanged += BusyVM_BusyChanged;
 
 		this.RaisePropertyChanged(nameof(ModsVM));
+		this.RaisePropertyChanged(nameof(ChaptersVM));
 		this.RaisePropertyChanged(nameof(SettingsVM));
 
 		var latestAppVer = await GitHubRepo.GetLatestVersionAsync();

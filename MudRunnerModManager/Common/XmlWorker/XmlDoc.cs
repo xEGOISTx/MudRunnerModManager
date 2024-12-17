@@ -5,7 +5,6 @@ using System.Xml;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace MudRunnerModManager.Common.XmlWorker
 {
@@ -26,27 +25,34 @@ namespace MudRunnerModManager.Common.XmlWorker
 
         public bool Exists => File.Exists(Path);
 
-        public async Task LoadOrCreateAsync()
-        {
-            await Task.Run(async () =>
-            {
-                if (!File.Exists(Path))
-                    File.Create(Path).Close();
+        public bool IsEmpty => _xmlItems.Count == 0;
 
-                await LoadAsync();
-            });
-        }
+
+        public void Load()
+        {
+			if (!File.Exists(Path))
+				return;
+
+			_xmlItems = ReadXml();
+			XmlItems = new ReadOnlyCollection<IXmlItem>(_xmlItems);
+		}
 
         public async Task LoadAsync()
         {
-            await Task.Run(() =>
-            {
-                if (!File.Exists(Path))
-                    return;
+            await Task.Run(Load);
+        }
 
-                _xmlItems = ReadXml();
-                XmlItems = new ReadOnlyCollection<IXmlItem>(_xmlItems);
-            });
+        public void LoadOrCreate()
+        {
+			if (!File.Exists(Path))
+				File.Create(Path).Close();
+
+            Load();
+		}
+
+		public async Task LoadOrCreateAsync()
+        {
+            await Task.Run(LoadOrCreate);
         }
 
         public void Delete()
@@ -58,13 +64,15 @@ namespace MudRunnerModManager.Common.XmlWorker
             Clear();
         }
 
-        public void AddRootXmlElem(XmlElem element, XmlEndElem endElem)
+        public void AddRootXmlElem(XmlElem element)
         {
-            if (_xmlItems.Count > 0)
-                throw new InvalidOperationException("Can`t add root element. Xml doc is not empty");
+            if (_xmlItems.Count == 0)
+                _xmlItems.Add(element);
 
-            _xmlItems.Add(element);
-            _xmlItems.Add(endElem);
+            else
+                _xmlItems.Insert(0, element);
+
+            _xmlItems.Add(new XmlEndElem(element.Name));
         }
 
         public void Clear()
@@ -72,58 +80,103 @@ namespace MudRunnerModManager.Common.XmlWorker
             _xmlItems.Clear();
         }
 
-        public void AddXmlElem(XmlElem element, XmlEndElem endElem, string parentName)
+        public void AddXmlNodeElem(XmlElem element, string parentName)
         {
-            var parentEndElem = GetXmlItem<XmlEndElem>(endEl => endEl.Name == parentName);
-            if (parentEndElem != null)
+            if (!TryGetEndElem(parentName, out XmlEndElem parentEndElem))
             {
-                int endElemIndex = _xmlItems.IndexOf(parentEndElem);
-                _xmlItems.Insert(endElemIndex, endElem);
-                _xmlItems.Insert(endElemIndex, element);
-            }
+                var parentElem = GetXmlItem<XmlElem>(endEl => endEl.Name == parentName);
+                if (parentElem is null)
+                    throw new Exception($"Impossible add xml node element to parent \"{parentName}\". Parent \"{parentName}\" not found");
+
+                parentEndElem = AddEndElementTo(parentElem);
+			}
+
+            int endElemIndex = _xmlItems.IndexOf(parentEndElem);
+            _xmlItems.Insert(endElemIndex, new XmlEndElem(element.Name));
+            _xmlItems.Insert(endElemIndex, element);
         }
 
         public void AddXmlElem(XmlElem element, string parentName)
         {
-            var endElem = GetXmlItem<XmlEndElem>(endEl => endEl.Name == parentName);
-            if (endElem != null)
+            if (!TryGetEndElem(parentName, out XmlEndElem parentEndElem))
             {
-                int endElemIndex = _xmlItems.IndexOf(endElem);
-                _xmlItems.Insert(endElemIndex, element);
+                var parentElem = GetXmlItem<XmlElem>(endEl => endEl.Name == parentName);
+                if (parentElem is null)
+					throw new Exception($"Impossible add xml element to parent \"{parentName}\". Parent \"{parentName}\" not found");
+
+				parentEndElem = AddEndElementTo(parentElem);
             }
+
+            int endElemIndex = _xmlItems.IndexOf(parentEndElem);
+            _xmlItems.Insert(endElemIndex, element);
+
         }
 
         public void AddRangeXmlElems(IEnumerable<XmlElem> elements, string parentName)
         {
-            var endElem = GetXmlItem<XmlEndElem>(endEl => endEl.Name == parentName);
-            if (endElem != null)
+            if (!TryGetEndElem(parentName, out XmlEndElem parentEndElem))
             {
-                var revElems = elements.Reverse();
-                int endElemIndex = _xmlItems.IndexOf(endElem);
-                foreach (var element in revElems)
-                {
-                    _xmlItems.Insert(endElemIndex, element);
-                }
+                var parentElem = GetXmlItem<XmlElem>(endEl => endEl.Name == parentName);
+                if (parentElem is null)
+                    throw new Exception($"Impossible add xml elements to parent \"{parentName}\". Parent \"{parentName}\" not found");
+
+                parentEndElem = AddEndElementTo(parentElem);
+            }
+
+            int endElemIndex = _xmlItems.IndexOf(parentEndElem);
+            foreach (var element in elements.Reverse())
+            {
+                _xmlItems.Insert(endElemIndex, element);
             }
         }
 
         public void RemoveXmlElem(XmlElem element)
         {
             var rElem = GetXmlItem<XmlElem>(elem => elem == element);
-            if (rElem is not null)
-                _xmlItems.Remove(rElem);
+			if (rElem is null)
+				return;
+
+            if(IsNode(rElem.Name))
+				throw new Exception($"XmlElemet is node. For node removing use {nameof(RemoveXmlNodeElem)}");
+
+            _xmlItems.Remove(rElem);
         }
+
+        public void RemoveXmlNodeElem(XmlElem element, bool removeIfIsNotNode = false)
+        {
+			var rElem = GetXmlItem<XmlElem>(elem => elem == element);
+            if (rElem is null)
+                return;
+
+            if(TryGetEndElem(rElem.Name, out XmlEndElem rEndElem))
+            {
+				var startNodeIndex = _xmlItems.IndexOf(rElem);
+				var endNodeIndex = _xmlItems.IndexOf(rEndElem);
+				_xmlItems.RemoveRange(startNodeIndex, endNodeIndex + 1 - startNodeIndex);
+			}
+            else
+            {
+                if (removeIfIsNotNode)
+                    _xmlItems.Remove(rElem);
+                else
+                    throw new Exception($"XmlElemet is not node. Use parameter {nameof(removeIfIsNotNode)} or {nameof(RemoveXmlElem)}");
+
+            }
+		}
 
         public bool IsPresentElem(XmlElem element)
         {
             var elem = GetXmlItem<XmlElem>(elem => elem == element);
-            if (elem is not null)
-                return true;
-
-            return false;
+            return elem is not null;
         }
 
-        public void ReplaceXmlElem(XmlElem element, XmlElem toElement, string parentName)
+		public bool IsNode(string elementName)
+		{
+			var endElem = GetXmlItem<XmlEndElem>(elem => elem.Name == elementName);
+			return endElem != null;
+		}
+
+		public void ReplaceXmlElem(XmlElem element, XmlElem toElement, string parentName)
         {
             RemoveXmlElem(element);
             AddXmlElem(toElement, parentName);
@@ -153,6 +206,59 @@ namespace MudRunnerModManager.Common.XmlWorker
             return res;
         }
 
+        public void Save(string destFileName)
+        {
+			using (Stream stream = File.Create(destFileName))
+			{
+				XmlWriterSettings settings = new XmlWriterSettings();
+				settings.Async = true;
+				settings.OmitXmlDeclaration = true;
+				settings.Indent = true;
+				settings.IndentChars = "\t";
+                settings.Encoding = System.Text.Encoding.UTF8;
+
+				using (XmlWriter writer = XmlWriter.Create(stream, settings))
+				{
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+					HashSet<string> endElemNames = new(_xmlItems.Where(item => item is XmlEndElem)
+																.Select(item => (item as XmlEndElem).Name));
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+					foreach (var xmlItem in _xmlItems)
+					{
+						if (xmlItem is XmlElem xmlElem)
+						{
+							settings.NewLineOnAttributes = true;
+							writer.WriteStartElement(null, xmlElem.Name, null);
+							settings.NewLineOnAttributes = false;
+
+							foreach (var attribute in xmlElem.Attributes)
+							{
+								writer.WriteAttributeString(null, attribute.Name, null, attribute.Value);
+							}
+
+							if (!endElemNames.Contains(xmlElem.Name))
+								writer.WriteEndElement();
+
+						}
+						else if (xmlItem is XmlEndElem endElem)
+						{
+							writer.WriteEndElement();
+						}
+					}
+
+					writer.Flush();
+				}
+			}
+
+			Path = destFileName;
+		}
+
+        public void Save()
+        {
+            Save(Path);
+        }
+
         public async Task SaveAsync()
         {
             await SaveAsync(Path);
@@ -162,57 +268,20 @@ namespace MudRunnerModManager.Common.XmlWorker
         {
             await Task.Run(() =>
             {
-                using (Stream stream = File.Create(destFileName))
-                {
-                    XmlWriterSettings settings = new XmlWriterSettings();
-                    settings.Async = true;
-                    settings.OmitXmlDeclaration = true;
-                    settings.Indent = true;
-                    settings.IndentChars = "\t";
-
-                    using (XmlWriter writer = XmlWriter.Create(stream, settings))
-                    {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-						HashSet<string> endElemNames = new(_xmlItems.Where(item => item is XmlEndElem)
-                                                                    .Select(item => (item as XmlEndElem).Name));
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-
-						foreach (var xmlItem in _xmlItems)
-                        {
-                            if (xmlItem is XmlElem xmlElem)
-                            {
-                                settings.NewLineOnAttributes = true;
-                                writer.WriteStartElement(null, xmlElem.Name, null);
-                                settings.NewLineOnAttributes = false;
-
-                                foreach (var attribute in xmlElem.Attributes)
-                                {
-                                    writer.WriteAttributeString(null, attribute.Name, null, attribute.Value);
-                                }
-
-                                if (!endElemNames.Contains(xmlElem.Name))
-                                    writer.WriteEndElement();
-
-                            }
-                            else if (xmlItem is XmlEndElem endElem)
-                            {
-                                writer.WriteEndElement();
-                            }
-                        }
-
-                        writer.Flush();
-                    }
-                }
-
-                Path = destFileName;
+                Save(destFileName);
             });
         }
+
+        public void Copy(string destFileName, bool overwrite)
+        {
+			File.Copy(Path, destFileName, overwrite);
+		}
 
         public async Task CopyAsync(string destFileName, bool overwrite)
         {
             await Task.Run(() =>
             {
-                File.Copy(Path, destFileName, overwrite);
+                Copy(destFileName, overwrite);
             });
         }
 
@@ -222,7 +291,8 @@ namespace MudRunnerModManager.Common.XmlWorker
 
             using (Stream stream = File.OpenRead(Path))
             {
-                if(stream.Length == 0)
+                //BOM
+                if(stream.Length <= 3)
                     return xmlItems;
 
                 XmlReaderSettings settings = new()
@@ -232,7 +302,7 @@ namespace MudRunnerModManager.Common.XmlWorker
 
                 using (XmlReader reader = XmlReader.Create(stream, settings))
                 {
-                    while (reader.Read())
+					while (reader.Read())
                     {
                         if (reader.NodeType == XmlNodeType.Element)
                         {
@@ -257,5 +327,20 @@ namespace MudRunnerModManager.Common.XmlWorker
 
             return xmlItems;
         }
+
+        private XmlEndElem AddEndElementTo(XmlElem elem)
+        {
+			var endElem = new XmlEndElem(elem.Name);
+			int elemIndex = _xmlItems.IndexOf(elem);
+			_xmlItems.Insert(elemIndex + 1, endElem);
+            return endElem;
+		}
+
+        private bool TryGetEndElem(string elemName, out XmlEndElem endElem)
+        {           
+			var elem = GetXmlItem<XmlEndElem>(elem => elem.Name == elemName);
+            endElem = elem is not null ? elem : new XmlEndElem("");
+			return endElem != null;
+		}
     }
 }

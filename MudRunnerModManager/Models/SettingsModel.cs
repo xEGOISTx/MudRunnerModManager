@@ -26,7 +26,6 @@ namespace MudRunnerModManager.Models
 
 		public async Task Save()
 		{
-
 			await Task.Run(() =>
 			{
 				//на всякий случай скопируем конфиг пользователя. в будущем может не понадобится
@@ -50,34 +49,6 @@ namespace MudRunnerModManager.Models
 
 
 			await _settings.SaveAsync();
-
-			await Task.Run(() =>
-			{
-				foreach (var chapter in _settings.Chapters)
-				{
-					if (!chapter.Exists)
-						chapter.Create();
-				}
-			});
-		}
-
-		public async Task RenameChapter(DirectoryInfo chapter, string newName)
-		{
-			await _configManager.RenameChapter(chapter, newName, new FileInfo($@"{_settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}"));
-			if (chapter.Exists)
-				chapter.MoveTo(@$"{chapter.Parent}\{newName}");
-		}
-
-		public async Task DeleteChapter(DirectoryInfo chapter)
-		{
-			await Task.Run(async () =>
-			{
-				if(chapter.Exists)
-				{
-					chapter.Delete(true);
-					await _configManager.DeleteChapter(chapter, new FileInfo($@"{_settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}"));
-				}			
-			});
 		}
 
 		public async Task SynhronizeWithOldVersion()
