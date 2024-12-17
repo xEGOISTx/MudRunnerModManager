@@ -35,16 +35,6 @@ namespace MudRunnerModManager.Common.AppSettings
                         settings.MudRunnerRootDir = mudRunnerRoot.Attributes.First().Value;
                 }
 
-
-                List<XmlElem> chapters = xmlSettings.GetXmlItems<XmlElem>(elem => elem.Name == SConsts.CHAPTER);
-                settings.Chapters.Clear();
-                foreach (XmlElem chapter in chapters)
-                {
-                    string? chapterName = chapter.Attributes.FirstOrDefault(atr => atr.Name == SConsts.NAME)?.Value;
-                    if (!string.IsNullOrWhiteSpace(chapterName))
-                        settings.Chapters.Add(new DirectoryInfo(chapterName));
-                }
-
 				XmlElem? alwaysClearCache = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == SConsts.ALWAYS_CLEAR_CACHE);
                 if(alwaysClearCache is not null)
                 {
@@ -75,29 +65,11 @@ namespace MudRunnerModManager.Common.AppSettings
                 xmlSettings.Clear();
 
                 XmlElem settElem = new(SConsts.SETTINGS);
-                XmlEndElem settEndElem = new(SConsts.SETTINGS);
-                xmlSettings.AddRootXmlElem(settElem, settEndElem);
+                xmlSettings.AddRootXmlElem(settElem);
 
                 XmlElem mudRunnerRoot = new(SConsts.MUDRUNNER_ROOT);
                 mudRunnerRoot.Attributes.Add(new XmlElemAttribute(SConsts.PATH, settings.MudRunnerRootDir));
                 xmlSettings.AddXmlElem(mudRunnerRoot, SConsts.SETTINGS);
-
-                if (settings.Chapters.Count > 0)
-                {
-                    XmlElem chaptersElem = new(SConsts.CHAPTERS);
-                    XmlEndElem chaptersEndElem = new(SConsts.CHAPTERS);
-                    xmlSettings.AddXmlElem(chaptersElem, chaptersEndElem, SConsts.SETTINGS);
-
-                    List<XmlElem> chapters = [];
-                    foreach (var chapterName in settings.Chapters)
-                    {
-                        XmlElem chapterElem = new(SConsts.CHAPTER);
-                        chapterElem.Attributes.Add(new XmlElemAttribute(SConsts.NAME, chapterName.FullName));
-                        chapters.Add(chapterElem);
-                    }
-
-                    xmlSettings.AddRangeXmlElems(chapters, SConsts.CHAPTERS);
-                }
 
                 XmlElem alwaysClearCache = new(SConsts.ALWAYS_CLEAR_CACHE);
 				alwaysClearCache.Attributes.Add(new XmlElemAttribute(SConsts.VALUE, settings.AlwaysClearCache.ToString()));

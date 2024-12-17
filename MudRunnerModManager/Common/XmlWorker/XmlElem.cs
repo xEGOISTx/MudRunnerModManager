@@ -12,16 +12,21 @@ namespace MudRunnerModManager.Common.XmlWorker
 
         public XmlNodeType NodeType => XmlNodeType.Element;
 
-        public static bool operator ==(XmlElem left, XmlElem right)
+        public static bool operator ==(XmlElem? left, XmlElem? right)
         {
-            return Equals(left, right);
+            if(left is null)
+                return right is null;
+
+            return left.Equals(right);
         }
 
-        public static bool operator !=(XmlElem left, XmlElem right)
+        public static bool operator !=(XmlElem? left, XmlElem? right)
         {
-            return !Equals(left, right);
-        }
+			if (left is null)
+				return right is not null;
 
+			return !left.Equals(right);
+		}
 
         public override bool Equals(object? obj)
         {

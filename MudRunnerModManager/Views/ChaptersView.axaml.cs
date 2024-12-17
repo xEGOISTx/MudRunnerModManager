@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace MudRunnerModManager.Views
 {
-	public partial class CaptersView : UserControl
+	public partial class ChaptersView : UserControl
 	{
-		public CaptersView()
+		public ChaptersView()
 		{
 			InitializeComponent();
 		}

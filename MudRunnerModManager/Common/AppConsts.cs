@@ -15,6 +15,9 @@ namespace MudRunnerModManager.Common
         public const string SEVEN_ZIP_EXT = ".7z";
         public const string MEDIA_PATH = "MediaPath";
 		public const string PATH = "Path";
+		public const string CHAPTERS = "Chapters";
+		public const string CHAPTER = "Chapter";
+		public const string NAME = "Name";
 	}
 
     internal static class SettingsConsts

@@ -107,7 +107,8 @@ namespace MudRunnerModManager.Common
 			List<TextInputValidationCondition> conditions =
 			[
 				new(text => !string.IsNullOrWhiteSpace(text) && IsValidText(text), Res.InvalidFolderName),
-				new(text => !existFolderNames.Contains(text.ToLower()), Res.NameAlreadyExists)
+				new(text => string.IsNullOrWhiteSpace(text) || !existFolderNames.Contains(text.ToLower().Trim()), Res.NameAlreadyExists),
+				new(text => string.IsNullOrWhiteSpace(defaultText) || (text != null && text.ToLower().Trim() != defaultText.ToLower().Trim()), Res.NameMustBeDifferent)
 			];
 
 			if (validateConditions != null)
@@ -191,10 +192,11 @@ namespace MudRunnerModManager.Common
 		}
 
 		public static async Task<SelectItemDialogResult<TItem>> ShowSelectItemDialog<TItem>(IEnumerable<TItem> items,
+			Func<TItem, string> displayValue,
 			string description,
 			IEnumerable<SelectItemUserValidationCondition<TItem>>? validateConditions = null)
 		{
-			SelectItemBox<TItem> selectItemBox = new(items, item => item is string value ? value : string.Empty, 
+			SelectItemBox<TItem> selectItemBox = new(items, displayValue, 
 				description,
 				OKCancel, 
 				validateConditions, 

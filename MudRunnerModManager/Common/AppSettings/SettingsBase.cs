@@ -8,7 +8,7 @@ namespace MudRunnerModManager.Common.AppSettings
     {
         public SettingsBase()
         {
-            Chapters = new ReadOnlyCollection<DirectoryInfo>(ChaptersI);
+           
         }
 
         public string MudRunnerRootDir { get; protected set; } = string.Empty;
@@ -16,9 +16,5 @@ namespace MudRunnerModManager.Common.AppSettings
 		public bool AlwaysClearCache { get; protected set; }
 
 		public bool DeleteModWithoutWarning { get; protected set; }
-
-		public ReadOnlyCollection<DirectoryInfo> Chapters { get; }
-
-        protected List<DirectoryInfo> ChaptersI { get; } = [];
     }
 }

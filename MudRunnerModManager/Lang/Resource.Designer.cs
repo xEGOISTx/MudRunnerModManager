@@ -97,6 +97,15 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Б.
+        /// </summary>
+        public static string Byte {
+            get {
+                return ResourceManager.GetString("Byte", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Отмена.
         /// </summary>
         public static string Cancel {
@@ -187,11 +196,38 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ГБ.
+        /// </summary>
+        public static string GByte {
+            get {
+                return ResourceManager.GetString("GByte", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Имя не может быть пустым и не должно содержать \ / : ; , * ? $ &lt; &gt; | +.
         /// </summary>
         public static string InvalidFolderName {
             get {
                 return ResourceManager.GetString("InvalidFolderName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to КБ.
+        /// </summary>
+        public static string KByte {
+            get {
+                return ResourceManager.GetString("KByte", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to МБ.
+        /// </summary>
+        public static string MByte {
+            get {
+                return ResourceManager.GetString("MByte", resourceCulture);
             }
         }
         
@@ -237,6 +273,24 @@ namespace MudRunnerModManager.Lang {
         public static string NameIsOccupiedByChapter {
             get {
                 return ResourceManager.GetString("NameIsOccupiedByChapter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Имя занято модом.
+        /// </summary>
+        public static string NameIsOccupiedByMod {
+            get {
+                return ResourceManager.GetString("NameIsOccupiedByMod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Имя длжно отличаться.
+        /// </summary>
+        public static string NameMustBeDifferent {
+            get {
+                return ResourceManager.GetString("NameMustBeDifferent", resourceCulture);
             }
         }
         
@@ -354,6 +408,24 @@ namespace MudRunnerModManager.Lang {
         public static string SettingsHaveBeenChangedSaveIt {
             get {
                 return ResourceManager.GetString("SettingsHaveBeenChangedSaveIt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Размер.
+        /// </summary>
+        public static string Size {
+            get {
+                return ResourceManager.GetString("Size", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ТБ.
+        /// </summary>
+        public static string TByte {
+            get {
+                return ResourceManager.GetString("TByte", resourceCulture);
             }
         }
         

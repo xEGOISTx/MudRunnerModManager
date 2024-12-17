@@ -1,70 +1,77 @@
-﻿using MudRunnerModManager.Common.AppSettings;
-using System;
+﻿using MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog;
+using MudRunnerModManager.Common;
+using MudRunnerModManager.Models;
+using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading.Tasks;
-using ReactiveUI;
 using System.Reactive;
-using MudRunnerModManager.Common;
+using System.Threading.Tasks;
 using Res = MudRunnerModManager.Lang.Resource;
-using System.IO;
 
 namespace MudRunnerModManager.ViewModels
 {
-	public class ChaptersViewModel : ViewModelBase
+	public class ChaptersViewModel : BusyViewModel
 	{
-		private readonly ISettings _settings;
+		private readonly ChaptersModel _model;
+		private ObservableCollection<ChapterViewModel> _chapters = [];
 		private ChapterViewModel? _selectedChapter;
 
-		public ChaptersViewModel(ISettings settings)
-		{ 
-			_settings = settings;
-
-			AddCommand = ReactiveCommand.Create(Add);
-			var canExec = this.WhenAnyValue(vm => vm.SelectedChapter, sch => sch as ChapterViewModel != null);
-			RemoveCommand = ReactiveCommand.Create(Remove, canExec);
-			RenameCommand = ReactiveCommand.Create(Rename, canExec);
-			OpenChapterFolderCommand = ReactiveCommand.Create(OpenChapterFolder, canExec);
-
-			//Refresh();
+		public ChaptersViewModel(ChaptersModel model)
+		{
+			_model = model;
+			EventTube.EventPushed += EventTube_EventPushed;
+			InitCommands();
+			Refresh();
 		}
 
-		public ObservableCollection<ChapterViewModel> Chapters { get; set; } = [];
+		public bool IsCorrectMRRootDir => _model.IsCorrectMRRootDir;
+
+		public ObservableCollection<ChapterViewModel> Chapters
+		{
+			get => _chapters;
+			private set => this.RaiseAndSetIfChanged(ref _chapters, value, nameof(Chapters));
+		}
 
 		public ChapterViewModel? SelectedChapter
 		{
 			get => _selectedChapter;
-			set => this.RaiseAndSetIfChanged(ref _selectedChapter, value, nameof(SelectedChapter)); 
+			set => this.RaiseAndSetIfChanged(ref _selectedChapter, value, nameof(SelectedChapter));
 		}
-
-		public List<ChapterViewModel> DeletedChapters { get; } = [];
 
 		public ReactiveCommand<Unit, Task> AddCommand { get; private set; }
 
-		public ReactiveCommand<Unit, Task> RemoveCommand {  get; private set; }
+		public ReactiveCommand<Unit, Task> DeleteCommand { get; private set; }
 
 		public ReactiveCommand<Unit, Task> RenameCommand { get; private set; }
 
-		public ReactiveCommand<Unit, Unit> OpenChapterFolderCommand {  get; private set; }
+		public ReactiveCommand<Unit, Unit> OpenFolderCommand { get; private set; }
 
-		public event EventHandler? ChaptersChanged;
 
-		public void Refresh()
+		public async void Refresh()
 		{
-			DeletedChapters.Clear();
-			Chapters.Clear();
-			foreach (var item in _settings.Chapters)
-			{
-				Chapters.Add(new ChapterViewModel(item.Name, false));
-			}
+			await BusyAction
+			(
+				_model.GetChapters,
+				chapters => 
+				{
+					Chapters = new ObservableCollection<ChapterViewModel>(chapters.Select(ch => new ChapterViewModel(ch)));
+				}
+			);
 
-			OnChanged();
 		}
 
-		public bool HasChanges()
+		[MemberNotNull(nameof(AddCommand), nameof(DeleteCommand),
+			nameof(RenameCommand), nameof(OpenFolderCommand))]
+		private void InitCommands()
 		{
-			return DeletedChapters.Count > 0 || Chapters.FirstOrDefault(ch => ch.IsNew || ch.IsRenamed) != null;
+			AddCommand = ReactiveCommand.Create(Add, this.WhenAnyValue(vm => vm.IsCorrectMRRootDir, isCorrect => isCorrect == true));
+			var canExec = this.WhenAnyValue(vm => vm.SelectedChapter, vm => vm.IsCorrectMRRootDir, (sch, isCorrect) => sch as ChapterViewModel != null && isCorrect == true);
+			DeleteCommand = ReactiveCommand.Create(Delete, canExec);
+			RenameCommand = ReactiveCommand.Create(Rename, canExec);
+			OpenFolderCommand = ReactiveCommand.Create(OpenFolder, canExec);
 		}
 
 		private async Task Add()
@@ -73,45 +80,36 @@ namespace MudRunnerModManager.ViewModels
 			if (res.Result != DialogButtonResult.OK)
 				return;
 
-			var delCh = DeletedChapters.FirstOrDefault(ch => ch.Name == res.Name);
-			if (delCh != null)
-			{
-				DeletedChapters.Remove(delCh);
-				Chapters.Add(delCh);
-			}
-			else
-			{
-				Chapters.Add(new ChapterViewModel(res.Name));
-			}
-
-			OnChanged();
+			await BusyAction
+			(
+				() => _model.AddChapter(res.Name), 
+				newChapter =>
+				{
+					Chapters.Add(new ChapterViewModel(newChapter));
+					PushEvent();
+				}
+			);
 		}
 
-		private async Task Remove()
+		private async Task Delete()
 		{
 			if (SelectedChapter == null)
 				return;
 
-			if(!SelectedChapter.IsNew)
-			{
-				var message = string.Format(Res.DeleteChapterWithContent, SelectedChapter.Name);
-				var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
-				if (res != DialogButtonResult.Yes)
-					return;
+			var message = string.Format(Res.DeleteChapterWithContent, SelectedChapter.Name);
+			var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
+			if (res != DialogButtonResult.Yes)
+				return;
 
-				DeletedChapters.Add(SelectedChapter);
-			}
-				
-			if (SelectedChapter.IsRenamed)
-			{
-				SelectedChapter.Name = SelectedChapter.OldName;
-				SelectedChapter.OldName = string.Empty;
-			}
-
-			Chapters.Remove(SelectedChapter);
-			SelectedChapter = null;
-
-			OnChanged();
+			await BusyAction
+			(
+				() => _model.DeleteChapter(SelectedChapter.Model),
+				() =>
+				{
+					Chapters.Remove(SelectedChapter);
+					PushEvent();
+				}
+			);
 		}
 
 		private async Task Rename()
@@ -123,69 +121,86 @@ namespace MudRunnerModManager.ViewModels
 			if (res.Result != DialogButtonResult.OK)
 				return;
 
-			SelectedChapter.Name = res.Name;
-
-			OnChanged();
+			await BusyAction
+			(
+				() => _model.RenameChapter(SelectedChapter.Model, res.Name),
+				chapter =>
+				{
+					SelectedChapter.Refresh(chapter);
+					PushEvent();
+				}
+			);
 		}
 
-		private void OpenChapterFolder()
+		private void OpenFolder()
 		{
-			if (SelectedChapter != null)
-			{
-				var dir = @$"{_settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{SelectedChapter.Name}";
-				if(Directory.Exists(dir))
-				{
-					System.Diagnostics.Process.Start("explorer.exe", dir);
-				}
-			}				
+			if (SelectedChapter != null && SelectedChapter.Model.Exists)
+				System.Diagnostics.Process.Start("explorer.exe", SelectedChapter.Model.Path);
+
 		}
 
 		private async Task<RenameDialogResult> ShowRenameDialog(string defaultChapterName)
 		{
-			return await DialogManager.ShowRenameFolderDialog(
-				defaultChapterName,
-				Res.EnterChapterName,
-				new HashSet<string>(Chapters.Where(ch => ch.Name != defaultChapterName).Select(ch => ch.Name)));
+			var rootChapterModNames = await BusyAction(_model.GetRootChapterModNames);
+			if (rootChapterModNames.Success)
+			{
+				TextInputValidationCondition condition = new(chName => chName == null || !rootChapterModNames.Value.Contains(chName), Res.NameIsOccupiedByMod);
+
+				return await DialogManager.ShowRenameFolderDialog(
+					defaultChapterName,
+					Res.EnterChapterName,
+					new HashSet<string>(Chapters.Where(ch => ch.Name != defaultChapterName).Select(ch => ch.Name).ToHashSet()),
+					[condition]);
+			}
+			
+			return new RenameDialogResult() { Result = DialogButtonResult.Cancel};
 		}
 
-		private void OnChanged()
+		private void EventTube_EventPushed(object sender, System.EventArgs e, EventKey key)
 		{
-			ChaptersChanged?.Invoke(this, new EventArgs());
+			if (key == EventKey.SettingsChanged)
+			{
+				this.RaisePropertyChanged(nameof(IsCorrectMRRootDir));
+				Refresh();
+			}
+			if (key == EventKey.ModsChanged)
+				Refresh();
 		}
 
+		private void PushEvent()
+		{
+			EventTube.PushEvent(this, new System.EventArgs(), EventKey.ChaptersChanged);
+		}
 	}
 
-	public class ChapterViewModel : ViewModelBase
+
+	public class ChapterViewModel : INotifyPropertyChanged
 	{
-		private string _name;
-
-		public ChapterViewModel(string name, bool isNew = true) 
+		public ChapterViewModel(Chapter chapter)
 		{
-			_name = name;
-			IsNew = isNew;
+			Refresh(chapter);
 		}
 
-		public string Name
+		public Chapter Model { get; private set; }
+
+		public string Name => Model.IsRoot ? Res.RootChapter : Model.Name;
+
+		public long Size => Model.Size;
+
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		[MemberNotNull(nameof(Model))]
+		public void Refresh(Chapter chapter)
 		{
-			get => _name;
-			set
-			{
-				if(value != _name)
-				{
-					if(!IsNew && string.IsNullOrEmpty(OldName))
-					{
-						OldName = _name;
-					}
-					_name = value;
-					this.RaisePropertyChanged(nameof(Name));
-				}
-			}
+			Model = chapter;
+			OnPropertyChanged(nameof(Name));
+			OnPropertyChanged(nameof(Size));
 		}
 
-		public string OldName { get; set; } = string.Empty;
-
-		public bool IsNew { get; private set; }
-
-		public bool IsRenamed => !IsNew && !string.IsNullOrEmpty(OldName) && OldName != Name;
+		private void OnPropertyChanged(string propName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+		}
 	}
 }

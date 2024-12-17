@@ -33,7 +33,7 @@ namespace MudRunnerModManager.AdditionalWindows.Dialogs.TextInputDialog
 
 		protected override TexInputBoxResult GetResult(string buttonResult, TextInputViewModel viewModel)
 		{
-			return new TexInputBoxResult { Result = buttonResult, Text = viewModel.ValidationContext.IsValid ? viewModel.Text : string.Empty };
+			return new TexInputBoxResult { Result = buttonResult, Text = viewModel.ValidationContext.IsValid ? viewModel.Text.Trim() : string.Empty };
 		}
 
 		protected override void SetValidation(TextInputViewModel viewModel)

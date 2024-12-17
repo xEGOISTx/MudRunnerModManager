@@ -6,15 +6,21 @@
         public string Value { get; } = value;
 
 
-        public static bool operator ==(XmlElemAttribute left, XmlElemAttribute right)
+        public static bool operator ==(XmlElemAttribute? left, XmlElemAttribute? right)
         {
-            return Equals(left, right);
+            if (left is null)
+                return right is null;
+
+            return left.Equals(right);
         }
 
-        public static bool operator !=(XmlElemAttribute left, XmlElemAttribute right)
+        public static bool operator !=(XmlElemAttribute? left, XmlElemAttribute? right)
         {
-            return !Equals(left, right);
-        }
+			if (left is null)
+				return right is not null;
+
+			return !left.Equals(right);
+		}
 
         public override bool Equals(object? obj)
         {

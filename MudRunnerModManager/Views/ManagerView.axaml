@@ -26,6 +26,11 @@
 					 HorizontalContentAlignment="Center">
 				<views:ModsView DataContext="{Binding ModsVM}"/>
 			</TabItem>
+			<TabItem Header="{x:Static lang:Resource.Chapters}"
+					 FontSize="20"
+					 HorizontalContentAlignment="Center">
+				<views:ChaptersView DataContext="{Binding ChaptersVM}"/>
+			</TabItem>
 			<TabItem Header="{x:Static lang:Resource.Settings}"
 					 FontSize="20"
 					 HorizontalContentAlignment="Center"
