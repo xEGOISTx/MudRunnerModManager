@@ -74,7 +74,6 @@ namespace MudRunnerModManager.AdditionalWindows.AddModDialog
 			var chaptersDic = _chapters.ToDictionary(ch => ch.Name, ch => ch);
 			var chapterLowerNames = new HashSet<string>(chaptersDic.Keys.Select(chName => chName.ToLower()));
 
-
 			IObservable<bool> validate1 =
 				viewModel.WhenAnyValue(
 					x => x.TextInputVM.Text,
