@@ -113,7 +113,7 @@ namespace MudRunnerModManager.ViewModels
 			{
 				await ApplySettings();
 
-				await _model.SynhronizeWithOldVersion();
+				//await _model.SynhronizeWithOldVersion();
 				await _model.Save();
 				EventTube.PushEvent(this, new EventArgs(), EventKey.SettingsChanged);
 			});

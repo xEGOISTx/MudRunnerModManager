@@ -5,13 +5,13 @@ namespace MudRunnerModManager.Common
 {
     internal static class AppPaths
     {
-        public static string AppDataDir = GetAppDataDir();//@$"{Environment.CurrentDirectory}\appData";
+        public static string AppDataDir = GetAppDataDir();
 		public static DirectoryInfo AppTempDir = new($@"{AppDataDir}\Temp");
         public static DirectoryInfo MudRunnerCacheDir =
             new($@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\{AppConsts.MUD_RUNNER}");
 
-        //todo: удалить
-        public static string MRRootDirRepFile = @$"{AppDataDir}\MRRootDirectory.txt";
+
+        //public static string MRRootDirRepFile = @$"{AppDataDir}\MRRootDirectory.txt";
 
         public static string XmlSettingsFilePath = @$"{AppDataDir}\settings.xml";
 

@@ -1,6 +1,7 @@
 ﻿using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
 using MudRunnerModManager.Common.AppSettings;
+using MudRunnerModManager.Common.Exstensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -112,28 +113,8 @@ namespace MudRunnerModManager.Models
 		private static long GetChapterSize(ChapterInfo chapterInfo)
 		{
 			DirectoryInfo chapter = new(chapterInfo.Path);
-			return GetChapterSize(chapter);
+			return chapter.GetSize();
 		}
-
-		//todo: пока дубль. переделать
-		private static long GetChapterSize(DirectoryInfo chapter)
-		{
-			long size = 0;
-
-			FileInfo[] files = chapter.GetFiles();
-			foreach (FileInfo file in files)
-			{
-				size += file.Length;
-			}
-
-			DirectoryInfo[] dirs = chapter.GetDirectories();
-			foreach (DirectoryInfo dir in dirs)
-			{
-				size += GetChapterSize(dir);
-			}
-			return size;
-		}
-
 	}
 
 	public class ChapterBase

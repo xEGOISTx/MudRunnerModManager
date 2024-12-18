@@ -82,7 +82,7 @@ namespace MudRunnerModManager.ViewModels
 
 	public class BusyActionResult<TValue>
 	{
-		public TValue? Value { get; init; }
+		public TValue? Value { get; init; } = default;
 
 		[MemberNotNullWhen(true, nameof(Value))]
 		public bool Success => Value != null;

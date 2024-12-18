@@ -51,13 +51,13 @@ namespace MudRunnerModManager.Models
 			await _settings.SaveAsync();
 		}
 
-		public async Task SynhronizeWithOldVersion()
-		{
-			var oldModsRootDir = new DirectoryInfo(@$"{_settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR_OLD}");
-			if (oldModsRootDir.Exists)
-				oldModsRootDir.MoveTo($@"{oldModsRootDir.Parent}\{AppConsts.MODS_ROOT_DIR}");
+		//public async Task SynhronizeWithOldVersion()
+		//{
+		//	var oldModsRootDir = new DirectoryInfo(@$"{_settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR_OLD}");
+		//	if (oldModsRootDir.Exists)
+		//		oldModsRootDir.MoveTo($@"{oldModsRootDir.Parent}\{AppConsts.MODS_ROOT_DIR}");
 
-			await _configManager.ReplaseOldModsRootDirNameToNewName(new FileInfo($@"{_settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}"));
-		}
+		//	await _configManager.ReplaseOldModsRootDirNameToNewName(new FileInfo($@"{_settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}"));
+		//}
 	}
 }

@@ -78,13 +78,13 @@ namespace MudRunnerModManager.AdditionalWindows.AddModDialog
 				viewModel.WhenAnyValue(
 					x => x.TextInputVM.Text,
 					x => x.SelectItemVM.SelectedItem,
-					(modName, selChapter) => selChapter != null && !chaptersDic[(selChapter as SelectItemBoxItem<ChapterItem>).Item.Name].Mods.Contains(modName.ToLower()));
+					(modName, selChapter) => selChapter != null && !chaptersDic[(selChapter as SelectItemBoxItem<ChapterItem>).Item.Name].Mods.Contains(modName.ToLower().Trim()));
 
 			IObservable<bool> validateForRootDir =
 				viewModel.WhenAnyValue(
 					x => x.TextInputVM.Text,
 					x => x.SelectItemVM.SelectedItem,
-					(modName, selChapter) => (selChapter as SelectItemBoxItem<ChapterItem>).Item.Name != Res.RootChapter || !chapterLowerNames.Contains(modName.ToLower()));
+					(modName, selChapter) => (selChapter as SelectItemBoxItem<ChapterItem>).Item.Name != Res.RootChapter || !chapterLowerNames.Contains(modName.ToLower().Trim()));
 
 
 			if (_validateConditions != null && _validateConditions.Any())

@@ -1,6 +1,7 @@
 ﻿using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
 using MudRunnerModManager.Common.AppSettings;
+using MudRunnerModManager.Models;
 using ReactiveUI;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
@@ -64,20 +65,20 @@ public class ManagerViewModel : ViewModelBase
 		AppVersion = $"v{appVer}";
 
 #pragma warning disable CS8774 // Member must have a non-null value when exiting.
-		var settings = await Settings.GetInstance();
-		await Task.Run(() => { new VersionSapport().Execute(); });
+			Settings settings = await Settings.GetInstance();
+			await Task.Run(() => { new VersionSapport().Execute(); });
 #pragma warning restore CS8774 // Member must have a non-null value when exiting.
 
 		XmlChapterInfosRepo chaptersRepo = new(AppPaths.XmlChaptersFilePath);
 
-		ModsVM = new ModsViewModel(new Models.ModsModel(chaptersRepo, settings));
+		ModsVM = new ModsViewModel(new ModsModel(chaptersRepo, settings), new CacheCleaner(AppPaths.MudRunnerCacheDir));
 		ModsVM.BusyChanged += BusyVM_BusyChanged;
 
-		var chaptersModel = new Models.ChaptersModel(chaptersRepo, settings);
+		var chaptersModel = new ChaptersModel(chaptersRepo, settings);
 		ChaptersVM = new ChaptersViewModel(chaptersModel);
 		ChaptersVM.BusyChanged += BusyVM_BusyChanged;
 
-		SettingsVM = new SettingsViewModel(new Models.SettingsModel(settings));
+		SettingsVM = new SettingsViewModel(new SettingsModel(settings));
 		SettingsVM.BusyChanged += BusyVM_BusyChanged;
 
 		this.RaisePropertyChanged(nameof(ModsVM));

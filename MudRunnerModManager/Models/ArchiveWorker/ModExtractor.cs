@@ -26,18 +26,32 @@ namespace MudRunnerModManager.Models.ArchiveWorker
 			"_templates"
 		];
 
+
+		public bool Extract(FileInfo mod, DirectoryInfo destination)
+		{
+			var allEntryKeys = _aExtractor.GetAllEntryKeysWithoutDirs(mod);
+			var modDirs = GetOnlyModDirs(allEntryKeys);
+
+			if (!modDirs.Any())
+				return false;
+
+			_aExtractor.Extract(mod, destination, modDirs);
+			return true;
+		}
+
 		public async Task<bool> ExtractAsync(FileInfo mod, DirectoryInfo destination)
 		{
-			return await Task.Run(async () =>
+			return await Task.Run(() =>
 			{
-				var allEntryKeys = await _aExtractor.GetAllEntryKeysWithoutDirsAsync(mod);
-				var modDirs = GetOnlyModDirs(allEntryKeys);
+				return Extract(mod, destination);
+				//var allEntryKeys = await _aExtractor.GetAllEntryKeysWithoutDirsAsync(mod);
+				//var modDirs = GetOnlyModDirs(allEntryKeys);
 
-				if (!modDirs.Any())
-					return false;
+				//if (!modDirs.Any())
+				//	return false;
 
-				await _aExtractor.ExtractAsync(mod, destination, modDirs);
-				return true;
+				//await _aExtractor.ExtractAsync(mod, destination, modDirs);
+				//return true;
 			});
 
 		}

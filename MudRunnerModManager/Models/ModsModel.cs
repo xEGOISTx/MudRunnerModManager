@@ -1,13 +1,11 @@
 ﻿using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
 using MudRunnerModManager.Common.AppSettings;
+using MudRunnerModManager.Common.Exstensions;
 using MudRunnerModManager.Models.ArchiveWorker;
-using Splat.ModeDetection;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Res = MudRunnerModManager.Lang.Resource;
 
 namespace MudRunnerModManager.Models
 {
@@ -33,49 +31,39 @@ namespace MudRunnerModManager.Models
 
 		private FileInfo Config => new($@"{Settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}");
 
-		public async Task AddModAsync(FileInfo mod, string chapter, string modName)
+		public Mod AddMod(FileInfo modArchive, string modName, ChapterBase chapter)
 		{
-			await Task.Run(async () =>
-			{
-				if (!mod.Exists || !IsCorrectMRRootDir)
-					return;
+			if (!modArchive.Exists || !IsCorrectMRRootDir || string.IsNullOrWhiteSpace(modName))
+				throw new System.Exception("Impossible add mod");
 
-				if(chapter == Res.RootChapter)
-					chapter = string.Empty;
-				else
-					chapter += "\\";
+			DirectoryInfo modDectinationDir = new($@"{chapter.Path}\{modName}");
 
-				DirectoryInfo modDectinationDir = new($@"{GetModsDir()}\{chapter}{modName}");
+			var res = _modExtractor.Extract(modArchive, modDectinationDir);
+			if (!res)
+				throw new System.Exception("Failed unzip archive");
 
-				var res = await _modExtractor.ExtractAsync(mod, modDectinationDir);
-				if (!res)
-					return;
+			_configManager.AddModPath(modDectinationDir, Config);
 
-				await _configManager.AddModPath(modDectinationDir, Config);
+			ModFileCorrection(modDectinationDir);
 
-				ModFileCorrection(modDectinationDir);
-			});
+			return new Mod(modDectinationDir, chapter, modDectinationDir.GetSize());
 		}
 
-		public async Task DeleteModAsync(Mod mod)
+		public void DeleteMod(Mod mod)
 		{
-			await Task.Run(async () =>
-			{
-				if (!mod.DirInfo.Exists || !IsCorrectMRRootDir)
-					return;
+			if (!mod.DirInfo.Exists || !IsCorrectMRRootDir)
+				return;
 
-				Directory.Delete(mod.DirInfo.FullName, true);
-				await _configManager.DeleteModPath(mod.DirInfo, Config);
-			});
+			Directory.Delete(mod.DirInfo.FullName, true);
+			_configManager.DeleteModPath(mod.DirInfo, Config);
 		}
 
-		public async Task RenameModAsync(Mod mod, string modName)
+		public Mod RenameMod(Mod mod, string modName)
 		{
-			await Task.Run(async () =>
-			{
-				await _configManager.RenameMod(mod.DirInfo, modName, Config);
-				mod.DirInfo.MoveTo(@$"{mod.DirInfo.Parent}\{modName}");
-			});
+			_configManager.RenameMod(mod.DirInfo, modName, Config);
+			mod.DirInfo.MoveTo(@$"{mod.DirInfo.Parent}\{modName}");
+
+			return new Mod(mod.DirInfo, mod.Chapter, mod.Size);
 		}
 
 		public Mod RelocateMod(Mod mod, ChapterBase chapter)
@@ -84,24 +72,6 @@ namespace MudRunnerModManager.Models
 			mod.DirInfo.MoveTo($@"{chapter.Path}\{mod.Name}");
 
 			return new Mod(mod.DirInfo, chapter, mod.Size);
-
-
-			//await Task.Run(async () =>
-			//{
-			//	await _configManager.ChangeModChapter(mod.DirInfo, chapter, Config);
-
-			//	string toPath = @$"{Settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}";
-			//	if(chapter.Name == AppConsts.MODS_ROOT_DIR)
-			//	{
-			//		toPath += @$"\{mod.DirInfo.Name}";
-			//	}
-			//	else
-			//	{
-			//		toPath += @$"\{chapter.Name}\{mod.DirInfo.Name}";
-			//	}
-
-			//	mod.DirInfo.MoveTo(toPath);
-			//});
 		}
 
 
@@ -152,40 +122,6 @@ namespace MudRunnerModManager.Models
 			return chapters;
 		}
 
-	
-		public async Task<bool> IsPresentCache()
-		{
-			return await Task.Run(() =>
-			{
-				if(AppPaths.MudRunnerCacheDir.Exists)
-				{
-					if (AppPaths.MudRunnerCacheDir.GetDirectories().Length > 0 || AppPaths.MudRunnerCacheDir.GetFiles().Length > 0)
-						return true;
-				}
-
-				return false;
-			});
-		}
-
-		public async Task ClearCache()
-		{
-			await Task.Run(() =>
-			{
-				if (AppPaths.MudRunnerCacheDir.Exists)
-				{
-					foreach(var dir in AppPaths.MudRunnerCacheDir.GetDirectories())
-					{
-						dir.Delete(true);
-					}
-
-					foreach(var file in AppPaths.MudRunnerCacheDir.GetFiles())
-					{
-						file.Delete();
-					}
-				}
-			});
-		}
-
 		private static List<Mod> GetChapterMods(ChapterBase chapter)
 		{
 			if (!chapter.Exists)
@@ -197,9 +133,9 @@ namespace MudRunnerModManager.Models
 
 			DirectoryInfo[] chapterDirs = chDirInfo.GetDirectories();
 
-			foreach (var dir in chapterDirs) 
+			foreach (var modDir in chapterDirs) 
 			{
-				mods.Add(new Mod(dir, chapter, GetModSize(dir)));
+				mods.Add(new Mod(modDir, chapter, modDir.GetSize()));
 			}
 
 			return mods;
@@ -214,42 +150,18 @@ namespace MudRunnerModManager.Models
 
 			HashSet<string> chapterNames = new(allChapters.Where(ch => !ch.IsRoot).Select(ch => ch.Name));
 
-			DirectoryInfo chDirInfo = new(rootChapter.Path);
+			DirectoryInfo rootChDirInfo = new(rootChapter.Path);
 
-			IEnumerable<DirectoryInfo> chapterDirs = chDirInfo.GetDirectories().Where(dir => !chapterNames.Contains(dir.Name));
+			IEnumerable<DirectoryInfo> rootChapterDirs = rootChDirInfo.GetDirectories().Where(dir => !chapterNames.Contains(dir.Name));
 
-			foreach (var dir in chapterDirs)
+			foreach (var modDir in rootChapterDirs)
 			{
-				mods.Add(new Mod(dir, rootChapter, GetModSize(dir)));
+				mods.Add(new Mod(modDir, rootChapter, modDir.GetSize()));
 			}
 
 			return mods;
 		}
 		
-		//todo: пока дубль. переделать
-		private static long GetModSize(DirectoryInfo modDir)
-		{
-			long size = 0;
-
-			FileInfo[] files = modDir.GetFiles();
-			foreach (FileInfo file in files)
-			{
-				size += file.Length;
-			}
-
-			DirectoryInfo[] dirs = modDir.GetDirectories();
-			foreach (DirectoryInfo dir in dirs)
-			{
-				size += GetModSize(dir);
-			}
-			return size;
-		}
-
-		private DirectoryInfo GetModsDir()
-		{
-			return new DirectoryInfo($@"{Settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
-		}
-
 		private void ModFileCorrection(DirectoryInfo modRootDir)
 		{
 			DirectoryInfo levelsDir = new DirectoryInfo(@$"{modRootDir.FullName}\levels");

@@ -21,23 +21,16 @@ namespace MudRunnerModManager.ViewModels
 	public class ModsViewModel : BusyViewModel
 	{
 		private readonly ModsModel _model;
+		private readonly CacheCleaner _cacheCleaner;
 		private ObservableCollection<ModViewModel> _addedMods = [];
 		private ModViewModel? _selectedMod;
 		private List<ChapterBaseViewModel> _chapters = [];
 
-		public ModsViewModel(ModsModel model)
+		public ModsViewModel(ModsModel model, CacheCleaner cacheCleaner)
 		{
 			_model = model;
+			_cacheCleaner = cacheCleaner;
 			EventTube.EventPushed += EventTube_EventPushed;
-
-			//IObservable<bool> validateMRRootDir =
-			//this.WhenAnyValue(
-			//	x => x.MRRootDirectory,
-			//	x => x.IsCorrectMRRootDir,
-			//	(dir, isCorrect) => string.IsNullOrWhiteSpace(dir) || isCorrect == true);
-
-			//this.ValidationRule(vm => vm.MRRootDirectory, validateMRRootDir, Res.WrongPath);
-
 
 			var canExec = this.WhenAnyValue(vm => vm.SelectedMod, vm => vm.IsCorrectMRRootDir, (sm, isCorrect) => sm as ModViewModel != null && isCorrect == true);
 			var canExecRelocate = this.WhenAnyValue(vm => vm.SelectedMod, vm => vm.IsCorrectMRRootDir, (sm, isCorrect) => sm as ModViewModel != null && _chapters.Count > 0 && isCorrect == true);//&& () == true
@@ -83,37 +76,20 @@ namespace MudRunnerModManager.ViewModels
 			var mod = new FileInfo(modPath);
 
 			List<ChapterItem> chapters = await CreateChapterItems();
-			var res = await DialogManager.ShowAddModDialog(Path.GetFileNameWithoutExtension(mod.Name), chapters);
-			if (!res.OK || res.ModName == null || res.Chapter == null)
+			var dialogRes = await DialogManager.ShowAddModDialog(Path.GetFileNameWithoutExtension(mod.Name), chapters);
+			if (!dialogRes.OK || dialogRes.ModName == null || dialogRes.Chapter == null)
 				return;
 
-			await BusyAction(async () =>
+			ChapterBaseViewModel selectedChap = _chapters.First(ch => ch.Name == dialogRes.Chapter);
+
+			var res = await BusyAction(() => _model.AddMod(mod, dialogRes.ModName, selectedChap.Model));
+			if(res.Success)
 			{
-				await _model.AddModAsync(mod, res.Chapter, res.ModName);
-
-				if (await _model.IsPresentCache())
-				{
-					if (!_model.Settings.AlwaysClearCache)
-					{
-						string message = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
-
-						var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
-						if (res == DialogButtonResult.Yes)
-						{
-							await _model.ClearCache();
-						}
-					}
-					else
-					{
-						await _model.ClearCache();
-					}
-				}
-
-				RefreshAsync();
+				AddedMods.Add(new ModViewModel(res.Value));
 				PushEvent();
-
-				await DialogManager.ShowMessageDialog(string.Format(Res.ModAdded, res.ModName), DialogManager.OK, DialogImage.Success);
-			});
+				await ClearCacheIfNeed();
+				await DialogManager.ShowMessageDialog(string.Format(Res.ModAdded, dialogRes.ModName), DialogManager.OK, DialogImage.Success);
+			}		
 		}
 
 		private async Task DeleteSelectedMod()
@@ -129,13 +105,16 @@ namespace MudRunnerModManager.ViewModels
 					return;
 			}
 
-			await BusyAction(async () =>
-			{
-				await _model.DeleteModAsync(SelectedMod.Model);
-				SelectedMod = null;
-				RefreshAsync();
-				PushEvent();
-			});
+			await BusyAction
+			(
+				() => _model.DeleteMod(SelectedMod.Model),
+				() =>
+				{
+					AddedMods.Remove(SelectedMod);
+					SelectedMod = null;
+					PushEvent();
+				}
+			);
 		}
 
 		private async Task RenameMod()
@@ -147,11 +126,11 @@ namespace MudRunnerModManager.ViewModels
 			if (renameRes.Result != DialogButtonResult.OK)
 				return;
 
-			await BusyAction(async () =>
-			{
-				await _model.RenameModAsync(SelectedMod.Model, renameRes.Name);
-				RefreshAsync();
-			});
+			await BusyAction
+			(
+				() => _model.RenameMod(SelectedMod.Model, renameRes.Name),
+				SelectedMod.Refresh
+			);
 		}
 
 		private async Task RelocateMod()
@@ -159,11 +138,7 @@ namespace MudRunnerModManager.ViewModels
 			if (SelectedMod == null)
 				return;
 
-			var result = await BusyAction(() =>
-			{
-				return GetRelocModConditions(SelectedMod);
-			});
-
+			var result = await BusyAction(() => GetRelocModConditions(SelectedMod));
 			if(result.Success)
 			{
 				var res = await DialogManager.ShowSelectItemDialog(_chapters.Where(ch => ch.Name != SelectedMod.ChapterName),
@@ -230,9 +205,9 @@ namespace MudRunnerModManager.ViewModels
 
 			if (mod.Model.Chapter.IsRoot)
 			{
-				var chapterNames = _chapters.Where(ch => !ch.Model.IsRoot).Select(ch => ch.Name.ToLower()).ToHashSet();
+				var chapterNames = _chapters.Select(ch => ch.Name.ToLower()).ToHashSet();
 				var conditionForRoorDir = new TextInputValidationCondition(
-					 modName => modName == null || !chapterNames.Contains(modName.ToLower()), Res.NameIsOccupiedByChapter);
+					 modName => modName == null || !chapterNames.Contains(modName.ToLower().Trim()), Res.NameIsOccupiedByChapter);
 
 				validateConditions = [conditionForRoorDir];
 			}
@@ -323,6 +298,30 @@ namespace MudRunnerModManager.ViewModels
 
 				return chapters.OrderBy(ch => ch.Name).ToList();
 			});
+		}
+
+		private async Task ClearCacheIfNeed()
+		{
+			var res = await BusyAction(_cacheCleaner.IsPresentCache);
+			if (res.Success && res.Value == true)
+			{
+				bool clearCache = false;
+				if (!_model.Settings.AlwaysClearCache)
+				{
+					string message = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
+
+					var dialogRes = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
+					if (dialogRes == DialogButtonResult.Yes)
+						clearCache = true;
+				}
+				else
+				{
+					clearCache = true;
+				}
+
+				if (clearCache)
+					await BusyAction(_cacheCleaner.ClearCache);
+			}
 		}
 
 		private void PushEvent()
