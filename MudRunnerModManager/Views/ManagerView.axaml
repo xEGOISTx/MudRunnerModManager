@@ -13,9 +13,46 @@
 		<vm:ManagerViewModel />
 	</Design.DataContext>
 
-	<Grid RowDefinitions="*, auto"
+	<Grid RowDefinitions="auto, *, auto"
 		  IsEnabled="{Binding !IsBusy}">
-		<TabControl Margin="-12,0,-12,0">
+		<Button HorizontalAlignment="Stretch"
+				IsVisible="{Binding !IsShowPathInput}"
+				IsEnabled="{Binding !IsShowPathInput}"
+				Command="{Binding ShowRootPathInputCommand}"
+				Content="{x:Static lang:Resource.ChangeRootPathDirectory}"
+				HorizontalContentAlignment="Center"
+				VerticalContentAlignment="Top"
+				Height="22"
+>
+			<Button.Styles>
+				<Style Selector="Button">
+					<Setter Property="Template">
+						<ControlTemplate>
+							<Border BorderThickness="1,0,1,2"
+									CornerRadius="0,5"
+									Background="DarkSlateGray">
+								<TextBlock Text="{TemplateBinding Content}" 
+										   Foreground="{DynamicResource TextControlForeground}"
+										   HorizontalAlignment="Center"
+										   Margin="0,1,0,0">
+		
+								</TextBlock>
+								<Border.Styles>
+									<Style Selector="Border:pointerover">
+										<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
+									</Style>
+								</Border.Styles>
+							</Border>
+						</ControlTemplate>
+					</Setter>
+				</Style>
+			</Button.Styles>
+		</Button>
+		
+		<TabControl Margin="-12,0,-12,0"
+					Grid.Row="1"
+					IsVisible="{Binding !IsShowPathInput}"
+					IsEnabled="{Binding !IsShowPathInput}">
 			<TabControl.ItemsPanel>
 				<ItemsPanelTemplate>
 					<UniformGrid Rows="1" HorizontalAlignment="Stretch"/>
@@ -39,7 +76,16 @@
 			</TabItem>
 		</TabControl>
 
-		<Border Grid.Row="1"
+		<views:GameRootPathView DataContext="{Binding GameRootPathVM}"
+								Grid.Row="1"
+								IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+																	AncestorType={x:Type UserControl},
+																	AncestorLevel=1} Path=DataContext.IsShowPathInput}"
+								IsVisible="{Binding RelativeSource={RelativeSource Mode=FindAncestor,
+																	AncestorType={x:Type UserControl},
+																	AncestorLevel=1}, Path=DataContext.IsShowPathInput}"/>
+
+		<Border Grid.Row="2"
 				BorderThickness="2"
 				BorderBrush="Gray"
 				CornerRadius="5,0"
@@ -57,7 +103,7 @@
 							<Style Selector="Button">
 								<Setter Property="Template">
 									<ControlTemplate>
-										<TextBlock Text="{TemplateBinding Content}" Foreground="{StaticResource SystemAccentColor}" >
+										<TextBlock Text="{TemplateBinding Content}" Foreground="DarkSlateGray" >
 											<TextBlock.Styles>
 												<Style Selector="TextBlock:pointerover">
 													<Setter Property="Foreground" Value="{StaticResource SystemAccentColorLight1}"/>

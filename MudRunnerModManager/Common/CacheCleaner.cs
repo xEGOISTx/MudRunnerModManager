@@ -13,7 +13,7 @@ namespace MudRunnerModManager.Common
 
 		public bool IsPresentCache()
 		{
-			if (AppPaths.MudRunnerCacheDir.Exists)
+			if (Directory.Exists(_cacheDirectory.FullName))
 			{
 				if (_cacheDirectory.GetDirectories().Length > 0 || _cacheDirectory.GetFiles().Length > 0)
 					return true;
@@ -24,7 +24,7 @@ namespace MudRunnerModManager.Common
 
 		public void ClearCache()
 		{
-			if (AppPaths.MudRunnerCacheDir.Exists)
+			if (Directory.Exists(_cacheDirectory.FullName))
 			{
 				foreach (var dir in _cacheDirectory.GetDirectories())
 				{

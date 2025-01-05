@@ -18,6 +18,8 @@ namespace MudRunnerModManager.Common
 		public const string CHAPTERS = "Chapters";
 		public const string CHAPTER = "Chapter";
 		public const string NAME = "Name";
+        public const string GAMES_ROOT_PATHS = "GamesRootPaths";
+		public const string GAME = "Game";
 	}
 
     internal static class SettingsConsts

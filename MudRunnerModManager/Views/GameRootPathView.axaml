@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+			 xmlns:vm="clr-namespace:MudRunnerModManager.ViewModels"
+			 xmlns:lang="clr-namespace:MudRunnerModManager.Lang"
+             x:Class="MudRunnerModManager.Views.GameRootPathView"
+			 x:DataType="vm:GameRootPathViewModel">
+	
+	<Grid Margin="2">
+		<Grid.Styles>
+		<Style Selector="Button">
+			<Setter Property="Width" Value="95"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Margin" Value="2,0,0,0"/>
+			<Setter Property="Background" Value="DarkSlateGray"/>
+		</Style>			
+		</Grid.Styles>
+		
+		<Border BorderThickness="2"
+				BorderBrush="Gray"
+				CornerRadius="0,5"
+				Padding="4">
+			
+			<Grid ColumnDefinitions="*, auto"
+					RowDefinitions="*, auto">
+
+				<StackPanel Orientation="Vertical"
+							VerticalAlignment="Center">
+					
+					<Grid RowDefinitions="auto, auto">
+						
+						<TextBlock Grid.ColumnSpan="2"
+								   Text="{Binding SelectRootDirectory}"
+								   HorizontalAlignment="Center"
+								   VerticalAlignment="Bottom"
+								   FontSize="15"/>
+
+						<Grid Grid.Row="1"
+							  ColumnDefinitions="*, auto"
+							  VerticalAlignment="Center">
+							<TextBox Grid.Row="1"
+										HorizontalAlignment="Stretch"
+										VerticalAlignment="Top"									 
+										Text="{Binding Path=Path}"/>
+
+							<Button Grid.Column="1" Grid.Row="1"
+									Content="{x:Static lang:Resource.Browse}"
+									VerticalAlignment="Top"
+									Margin="2,1,0,0"
+									HorizontalAlignment="Stretch"
+									Command="{Binding BrowseCommand}"/>							
+						</Grid>
+
+					</Grid>
+				</StackPanel>
+
+				<StackPanel Orientation="Horizontal"
+							Grid.Row="2"
+							Grid.ColumnSpan="2"
+							VerticalAlignment="Bottom"
+							HorizontalAlignment="Right">
+					<Button Content="{x:Static lang:Resource.Save}"
+							Command="{Binding SaveCommand}"/>
+					<Button Content="{x:Static lang:Resource.Cancel}"
+							Command="{Binding CancelCommand}"
+							IsEnabled="{Binding IsCancelAvailable}"
+							IsVisible="{Binding IsCancelAvailable}"/>
+				</StackPanel>
+
+			</Grid>				
+		</Border>	
+	</Grid>
+</UserControl>

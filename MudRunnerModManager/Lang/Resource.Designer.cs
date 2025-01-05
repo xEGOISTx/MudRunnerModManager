@@ -115,6 +115,15 @@ namespace MudRunnerModManager.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Изменить путь к корневой папке.
+        /// </summary>
+        public static string ChangeRootPathDirectory {
+            get {
+                return ResourceManager.GetString("ChangeRootPathDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Раздел.
         /// </summary>
         public static string Chapter {
@@ -354,6 +363,15 @@ namespace MudRunnerModManager.Lang {
         public static string Save {
             get {
                 return ResourceManager.GetString("Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Укажите путь к корневой папке {0}.
+        /// </summary>
+        public static string SelecRootDirectoryFor {
+            get {
+                return ResourceManager.GetString("SelecRootDirectoryFor", resourceCulture);
             }
         }
         

@@ -1,6 +1,5 @@
 ﻿using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
-using MudRunnerModManager.Common.AppSettings;
 using MudRunnerModManager.Common.Exstensions;
 using System;
 using System.Collections.Generic;
@@ -12,27 +11,23 @@ namespace MudRunnerModManager.Models
 	public class ChaptersModel
 	{
 		private readonly IChapterInfosRepo _chapterInfosRepo;
-		private readonly SettingsBase _settings;
 		private readonly ConfigManager _configManager = new();
+		private readonly string _gameRootPath;
 
-		public ChaptersModel(IChapterInfosRepo chapterInfosRepo, SettingsBase settings)
+		public ChaptersModel(IChapterInfosRepo chapterInfosRepo, string gameRootPath)
 		{
 			_chapterInfosRepo = chapterInfosRepo;
-			_settings = settings;
+			_gameRootPath = gameRootPath;
 		}
 
-		public bool IsCorrectMRRootDir => !string.IsNullOrEmpty(_settings.MudRunnerRootDir)
-											&& File.Exists(@$"{_settings.MudRunnerRootDir.Trim([' ', '\\'])}\{AppConsts.MUD_RUNNER_EXE}")
-											&& File.Exists(@$"{_settings.MudRunnerRootDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
 
 		public Chapter AddChapter(string chapterName)
 		{
 			if (string.IsNullOrWhiteSpace(chapterName) 
-				|| !IsCorrectMRRootDir
 				|| chapterName == AppConsts.MODS_ROOT_DIR) 
 				throw new Exception("Impossible add chapter");
 
-			DirectoryInfo chapter = new($@"{_settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapterName}");
+			DirectoryInfo chapter = new($@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapterName}");
 
 			if (!chapter.Exists)
 				chapter.Create();
@@ -45,14 +40,14 @@ namespace MudRunnerModManager.Models
 
 		public void DeleteChapter(Chapter chapter)
 		{
-			if (chapter == null || chapter.IsRoot || !IsCorrectMRRootDir)
+			if (chapter == null || chapter.IsRoot)
 				return;
 
 			DirectoryInfo chapterInfo = new(chapter.Path);
 			if (chapterInfo.Exists)
 			{
 				chapterInfo.Delete(true);
-				_configManager.DeleteChapter(chapterInfo, new FileInfo($@"{_settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}"));
+				_configManager.DeleteChapter(chapterInfo, new FileInfo($@"{_gameRootPath}\{AppConsts.CONFIG_XML}"));
 			}
 
 			_chapterInfosRepo.Delete(chapter.ChapterInfo);
@@ -62,10 +57,7 @@ namespace MudRunnerModManager.Models
 		{
 			var chapters = new List<Chapter>();
 
-			if(!IsCorrectMRRootDir)
-				return chapters;
-
-			IEnumerable<ChapterInfo> chapterInfos =  _chapterInfosRepo.Get(_settings.MudRunnerRootDir);
+			IEnumerable<ChapterInfo> chapterInfos =  _chapterInfosRepo.Get(_gameRootPath);
 
 			foreach (var chapterInfo in chapterInfos)
 			{
@@ -81,11 +73,11 @@ namespace MudRunnerModManager.Models
 
 		public Chapter RenameChapter(Chapter chapter, string newName)
 		{
-			if (chapter.IsRoot || !IsCorrectMRRootDir || !chapter.Exists || chapter.Name == newName)
+			if (chapter.IsRoot || !chapter.Exists || chapter.Name == newName)
 				return chapter;
 
 			DirectoryInfo chapterInfo = new(chapter.Path);
-			_configManager.RenameChapter(chapterInfo, newName, new FileInfo($@"{_settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}"));
+			_configManager.RenameChapter(chapterInfo, newName, new FileInfo($@"{_gameRootPath}\{AppConsts.CONFIG_XML}"));
 
 			string newChapterPath = $@"{chapterInfo.Parent.FullName}\{newName}";
 			ChapterInfo chapterNewName = new(newName, newChapterPath);
@@ -98,14 +90,11 @@ namespace MudRunnerModManager.Models
 
 		public HashSet<string> GetRootChapterModNames()
 		{
-			if (!IsCorrectMRRootDir)
-				return [];
-
 			List<string> mods = [];
 
-			HashSet<string> chapterNames = new(_chapterInfosRepo.Get(_settings.MudRunnerRootDir).Select(ch => ch.Name));
+			HashSet<string> chapterNames = new(_chapterInfosRepo.Get(_gameRootPath).Select(ch => ch.Name));
 
-			DirectoryInfo rootChDirInfo = new($@"{_settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
+			DirectoryInfo rootChDirInfo = new($@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
 
 			return rootChDirInfo.GetDirectories().Where(dir => !chapterNames.Contains(dir.Name)).Select(dir => dir.Name).ToHashSet();
 		}

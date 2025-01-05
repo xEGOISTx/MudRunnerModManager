@@ -11,7 +11,9 @@ namespace MudRunnerModManager.Common
 	{
 		SettingsChanged,
 		ChaptersChanged,
-		ModsChanged
+		ModsChanged,
+		GameRootPathChanged,
+
 	}
 
 	public static class EventTube

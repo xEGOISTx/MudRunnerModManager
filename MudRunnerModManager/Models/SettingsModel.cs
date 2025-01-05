@@ -17,35 +17,28 @@ namespace MudRunnerModManager.Models
 
 		public ISettings Settings => _settings;
 
-		public bool IsCorrectMRRootDir(string path)
-		{
-			return !string.IsNullOrEmpty(path)
-					&& File.Exists(@$"{path.Trim([' ', '\\'])}\{AppConsts.MUD_RUNNER_EXE}")
-					&& File.Exists(@$"{path.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
-		}
-
 		public async Task Save()
 		{
-			await Task.Run(() =>
-			{
+			//await Task.Run(() =>
+			//{
 				//на всякий случай скопируем конфиг пользователя. в будущем может не понадобится
-				if (IsCorrectMRRootDir(_settings.MudRunnerRootDir))
-				{
-					var dir = new DirectoryInfo(@$"{AppPaths.AppDataDir}\cb");
-					var file = new FileInfo(@$"{AppPaths.AppDataDir}\\cb\\{AppConsts.CONFIG_XML}");
+			//	if (IsCorrectMRRootDir(_settings.MudRunnerRootDir))
+			//	{
+			//		var dir = new DirectoryInfo(@$"{AppPaths.AppDataDir}\cb");
+			//		var file = new FileInfo(@$"{AppPaths.AppDataDir}\\cb\\{AppConsts.CONFIG_XML}");
 
-					if (!dir.Exists)
-					{
-						dir.Create();
-					}
+			//		if (!dir.Exists)
+			//		{
+			//			dir.Create();
+			//		}
 
-					if (!file.Exists)
-					{
-						var userConf = new FileInfo(@$"{_settings.MudRunnerRootDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
-						userConf.CopyTo(file.FullName);
-					}
-				}
-			});
+			//		if (!file.Exists)
+			//		{
+			//			var userConf = new FileInfo(@$"{_settings.MudRunnerRootDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
+			//			userConf.CopyTo(file.FullName);
+			//		}
+			//	}
+			//});
 
 
 			await _settings.SaveAsync();

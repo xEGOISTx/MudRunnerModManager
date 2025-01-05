@@ -1,7 +1,4 @@
 ﻿using MudRunnerModManager.Common.XmlWorker;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using SConsts = MudRunnerModManager.Common.SettingsConsts;
@@ -27,14 +24,6 @@ namespace MudRunnerModManager.Common.AppSettings
 
             await Task.Run(() =>
             {
-                XmlElem? mudRunnerRoot = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == SConsts.MUDRUNNER_ROOT);
-                if (mudRunnerRoot is not null)
-                {
-                    string? mrRoot = mudRunnerRoot.Attributes.FirstOrDefault(atr => atr.Name == SConsts.PATH)?.Value;
-                    if (mrRoot != null)
-                        settings.MudRunnerRootDir = mudRunnerRoot.Attributes.First().Value;
-                }
-
 				XmlElem? alwaysClearCache = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == SConsts.ALWAYS_CLEAR_CACHE);
                 if(alwaysClearCache is not null)
                 {
@@ -66,10 +55,6 @@ namespace MudRunnerModManager.Common.AppSettings
 
                 XmlElem settElem = new(SConsts.SETTINGS);
                 xmlSettings.AddRootXmlElem(settElem);
-
-                XmlElem mudRunnerRoot = new(SConsts.MUDRUNNER_ROOT);
-                mudRunnerRoot.Attributes.Add(new XmlElemAttribute(SConsts.PATH, settings.MudRunnerRootDir));
-                xmlSettings.AddXmlElem(mudRunnerRoot, SConsts.SETTINGS);
 
                 XmlElem alwaysClearCache = new(SConsts.ALWAYS_CLEAR_CACHE);
 				alwaysClearCache.Attributes.Add(new XmlElemAttribute(SConsts.VALUE, settings.AlwaysClearCache.ToString()));

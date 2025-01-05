@@ -17,8 +17,8 @@
 				Margin="0,2,0,0"
 				Padding="4">
 
-			<Grid RowDefinitions="auto, *, auto">
-				<Grid ColumnDefinitions="*, auto"
+			<Grid RowDefinitions="*, auto">
+				<!--<Grid ColumnDefinitions="*, auto"
 					  RowDefinitions="auto, auto"
 					  Margin="0,7,0,0">
 
@@ -38,10 +38,10 @@
 							HorizontalContentAlignment="Center"
 							Command="{Binding BrowseMRRootDirCommand}"
 							Background="DarkSlateGray"/>
-				</Grid>
+				</Grid>-->
 
 				<Grid RowDefinitions="auto, auto"
-					  Grid.Row="1">
+					  Grid.Row="0">
 					<CheckBox Content="{x:Static lang:Resource.AlwaysClearCache}"
 							  Margin="0,0,5,0"
 							  IsChecked="{Binding AlwaysClearCache}"/>
@@ -50,7 +50,7 @@
 							  IsChecked="{Binding DeleteModWithoutWarning}"/>
 				</Grid>
 
-				<Button Grid.Row="3"
+				<Button Grid.Row="1"
 						Content="{x:Static lang:Resource.Save}"
 						HorizontalAlignment="Stretch"
 						HorizontalContentAlignment="Center"

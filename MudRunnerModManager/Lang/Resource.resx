@@ -249,4 +249,10 @@
   <data name="NameMustBeDifferent" xml:space="preserve">
     <value>Имя длжно отличаться</value>
   </data>
+  <data name="SelecRootDirectoryFor" xml:space="preserve">
+    <value>Укажите путь к корневой папке {0}</value>
+  </data>
+  <data name="ChangeRootPathDirectory" xml:space="preserve">
+    <value>Изменить путь к корневой папке</value>
+  </data>
 </root>

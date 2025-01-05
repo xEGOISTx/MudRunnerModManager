@@ -17,6 +17,8 @@ namespace MudRunnerModManager.Common
 
 		public static string XmlChaptersFilePath = @$"{AppDataDir}\chapters.xml";
 
+		public static string XmlGameRootPathsFilePath = @$"{AppDataDir}\gamesRootPaths.xml";
+
 		private static string GetAppDataDir()
         {
 #if DEBUG

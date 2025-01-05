@@ -94,7 +94,7 @@ namespace MudRunnerModManager.Common.AppRepo
 			return CreateChapterInfos(chapters);
 		}
 
-		public IEnumerable<ChapterInfo> Get(string gameRootPaht)
+		public IEnumerable<ChapterInfo> Get(string gameRootPath)
 		{
 			XmlDoc xmlChapters = new(_filePath);
 			if (!xmlChapters.Exists)
@@ -105,7 +105,7 @@ namespace MudRunnerModManager.Common.AppRepo
 			if (xmlChapters.IsEmpty)
 				return [];
 
-			IEnumerable<XmlElem> chapters = GetChapterXmlElems(xmlChapters, gameRootPaht);
+			IEnumerable<XmlElem> chapters = GetChapterXmlElems(xmlChapters, gameRootPath);
 			return CreateChapterInfos(chapters);
 		}
 

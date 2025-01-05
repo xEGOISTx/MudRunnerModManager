@@ -14,26 +14,23 @@ namespace MudRunnerModManager.Models
 		private readonly ConfigManager _configManager = new();
 		private readonly ModExtractor _modExtractor = new(new ArchiveExtractor());
 		private readonly IChapterInfosRepo _chapterInfosRepo;
+		private readonly string _gameRootPath;
 
-		public ModsModel(IChapterInfosRepo chapterInfosRepo, Settings settings)
+		public ModsModel(IChapterInfosRepo chapterInfosRepo, Settings settings, string gameRootPath)
 		{
 			_chapterInfosRepo = chapterInfosRepo;
 			Settings = settings;
+			_gameRootPath = gameRootPath;
 		}
 
 
 		public SettingsBase Settings { get; }
 
-		public bool IsCorrectMRRootDir => !string.IsNullOrEmpty(Settings.MudRunnerRootDir) 
-											&& File.Exists(@$"{Settings.MudRunnerRootDir.Trim([' ', '\\'])}\{AppConsts.MUD_RUNNER_EXE}")
-											&& File.Exists(@$"{Settings.MudRunnerRootDir.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}");
-
-
-		private FileInfo Config => new($@"{Settings.MudRunnerRootDir}\{AppConsts.CONFIG_XML}");
+		private FileInfo Config => new($@"{_gameRootPath}\{AppConsts.CONFIG_XML}");
 
 		public Mod AddMod(FileInfo modArchive, string modName, ChapterBase chapter)
 		{
-			if (!modArchive.Exists || !IsCorrectMRRootDir || string.IsNullOrWhiteSpace(modName))
+			if (!modArchive.Exists || string.IsNullOrWhiteSpace(modName))
 				throw new System.Exception("Impossible add mod");
 
 			DirectoryInfo modDectinationDir = new($@"{chapter.Path}\{modName}");
@@ -51,7 +48,7 @@ namespace MudRunnerModManager.Models
 
 		public void DeleteMod(Mod mod)
 		{
-			if (!mod.DirInfo.Exists || !IsCorrectMRRootDir)
+			if (!mod.DirInfo.Exists)
 				return;
 
 			Directory.Delete(mod.DirInfo.FullName, true);
@@ -83,9 +80,6 @@ namespace MudRunnerModManager.Models
 
 		public List<Mod> GetMods(IEnumerable<ChapterBase> chapters)
 		{
-			if (!IsCorrectMRRootDir)
-				return [];
-
 			List<Mod> mods = [];
 
 			foreach (var chapter in chapters) 
@@ -101,16 +95,13 @@ namespace MudRunnerModManager.Models
 
 		public List<ChapterBase> GetChapters()
 		{
-			if (!IsCorrectMRRootDir)
-				return [];
-
 			var chapters = new List<ChapterBase>();
 
-			IEnumerable<ChapterInfo> chapterInfos = _chapterInfosRepo.Get(Settings.MudRunnerRootDir);
+			IEnumerable<ChapterInfo> chapterInfos = _chapterInfosRepo.Get(_gameRootPath);
 
 			ChapterInfo rootChapterInfo = new(
 				AppConsts.MODS_ROOT_DIR,
-				$@"{Settings.MudRunnerRootDir}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}"
+				$@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}"
 			);
 			chapters.Add(new ChapterBase(rootChapterInfo));
 

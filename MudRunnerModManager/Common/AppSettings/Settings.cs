@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace MudRunnerModManager.Common.AppSettings
 {
@@ -12,12 +10,6 @@ namespace MudRunnerModManager.Common.AppSettings
 
 
         public static ISettingsProvider SettingsProvider { get; set; } = new XmlSettingsProvider(AppPaths.XmlSettingsFilePath);
-
-        public new string MudRunnerRootDir
-        {
-            get => base.MudRunnerRootDir;
-            set => base.MudRunnerRootDir = value;
-        }
 
 		public new bool AlwaysClearCache
         { 

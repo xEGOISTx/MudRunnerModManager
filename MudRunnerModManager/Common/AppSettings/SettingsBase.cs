@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-
-namespace MudRunnerModManager.Common.AppSettings
+﻿namespace MudRunnerModManager.Common.AppSettings
 {
     public abstract class SettingsBase
     {
@@ -10,8 +6,6 @@ namespace MudRunnerModManager.Common.AppSettings
         {
            
         }
-
-        public string MudRunnerRootDir { get; protected set; } = string.Empty;
 
 		public bool AlwaysClearCache { get; protected set; }
 

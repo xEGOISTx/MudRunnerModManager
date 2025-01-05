@@ -32,18 +32,14 @@ namespace MudRunnerModManager.ViewModels
 			_cacheCleaner = cacheCleaner;
 			EventTube.EventPushed += EventTube_EventPushed;
 
-			var canExec = this.WhenAnyValue(vm => vm.SelectedMod, vm => vm.IsCorrectMRRootDir, (sm, isCorrect) => sm as ModViewModel != null && isCorrect == true);
-			var canExecRelocate = this.WhenAnyValue(vm => vm.SelectedMod, vm => vm.IsCorrectMRRootDir, (sm, isCorrect) => sm as ModViewModel != null && _chapters.Count > 0 && isCorrect == true);//&& () == true
-			AddModCommand = ReactiveCommand.Create(AddMod, this.WhenAnyValue(vm => vm.IsCorrectMRRootDir, isCorrect => isCorrect == true));
+			var canExec = this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as ModViewModel != null);
+			var canExecRelocate = this.WhenAnyValue(vm => vm.SelectedMod, sm=> sm as ModViewModel != null && _chapters.Count > 0);
+			AddModCommand = ReactiveCommand.Create(AddMod);
 			DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, canExec);
 			RenameModCommand = ReactiveCommand.Create(RenameMod, canExec);
 			RelocateModCommand = ReactiveCommand.Create(RelocateMod, canExecRelocate);
 			OpenModFolderCommand = ReactiveCommand.Create(OpenModFolder, canExec);
-
-			RefreshAsync();
 		}
-
-		public bool IsCorrectMRRootDir => _model.IsCorrectMRRootDir;
 
 		public ObservableCollection<ModViewModel> AddedMods
 		{
@@ -219,7 +215,7 @@ namespace MudRunnerModManager.ViewModels
 				validateConditions);
 		}
 
-		private async void RefreshAsync()
+		public async void Refresh()
 		{
 			await BusyAction
 			(
@@ -238,15 +234,8 @@ namespace MudRunnerModManager.ViewModels
 
 		private void EventTube_EventPushed(object sender, EventArgs e, EventKey key)
 		{
-			if (key == EventKey.SettingsChanged)
-			{
-				this.RaisePropertyChanged(nameof(IsCorrectMRRootDir));
-				RefreshAsync();
-			}
 			if(key == EventKey.ChaptersChanged)
-			{
-				RefreshAsync();
-			}
+				Refresh();
 		}
 
 		private Dictionary<ChapterBaseViewModel, List<ModViewModel>>GetChaptersWithMods(

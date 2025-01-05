@@ -23,11 +23,8 @@ namespace MudRunnerModManager.ViewModels
 		{
 			_model = model;
 			EventTube.EventPushed += EventTube_EventPushed;
-			InitCommands();
-			Refresh();
+			InitCommands();			
 		}
-
-		public bool IsCorrectMRRootDir => _model.IsCorrectMRRootDir;
 
 		public ObservableCollection<ChapterViewModel> Chapters
 		{
@@ -67,8 +64,8 @@ namespace MudRunnerModManager.ViewModels
 			nameof(RenameCommand), nameof(OpenFolderCommand))]
 		private void InitCommands()
 		{
-			AddCommand = ReactiveCommand.Create(Add, this.WhenAnyValue(vm => vm.IsCorrectMRRootDir, isCorrect => isCorrect == true));
-			var canExec = this.WhenAnyValue(vm => vm.SelectedChapter, vm => vm.IsCorrectMRRootDir, (sch, isCorrect) => sch as ChapterViewModel != null && isCorrect == true);
+			AddCommand = ReactiveCommand.Create(Add);
+			var canExec = this.WhenAnyValue(vm => vm.SelectedChapter, sch => sch as ChapterViewModel != null);
 			DeleteCommand = ReactiveCommand.Create(Delete, canExec);
 			RenameCommand = ReactiveCommand.Create(Rename, canExec);
 			OpenFolderCommand = ReactiveCommand.Create(OpenFolder, canExec);
@@ -158,11 +155,6 @@ namespace MudRunnerModManager.ViewModels
 
 		private void EventTube_EventPushed(object sender, System.EventArgs e, EventKey key)
 		{
-			if (key == EventKey.SettingsChanged)
-			{
-				this.RaisePropertyChanged(nameof(IsCorrectMRRootDir));
-				Refresh();
-			}
 			if (key == EventKey.ModsChanged)
 				Refresh();
 		}
