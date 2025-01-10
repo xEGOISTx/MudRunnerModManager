@@ -9,7 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <StartupObject>MudRunnerModManager.Desktop.Program</StartupObject>
-    <Version>2.2.3</Version>
+    <Version>2.2.4</Version>
     <AssemblyName>MudRunner ModManager</AssemblyName>
   </PropertyGroup>
   <ItemGroup>

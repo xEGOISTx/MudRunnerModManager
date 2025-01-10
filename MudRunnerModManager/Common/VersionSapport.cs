@@ -27,7 +27,10 @@ namespace MudRunnerModManager.Common
 			if (settings.IsEmpty)
 				return;
 
-			if (RelocateChapters(settings) || RelocateMRRootPath(settings))
+			var chaptersRelocated = RelocateChapters(settings);
+			var rootPathRelocated = RelocateMRRootPath(settings);
+
+			if (chaptersRelocated || rootPathRelocated)
 				settings.Save();
 		}
 
