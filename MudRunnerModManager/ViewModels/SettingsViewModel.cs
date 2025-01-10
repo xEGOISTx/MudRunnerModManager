@@ -1,52 +1,28 @@
 ﻿using MudRunnerModManager.Common;
-using MudRunnerModManager.Models;
+using MudRunnerModManager.Common.AppRepo;
 using ReactiveUI;
 using System;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace MudRunnerModManager.ViewModels
 {
 	public class SettingsViewModel : BusyViewModel
 	{
-		private readonly SettingsModel _model;
+		private readonly ISettingsRepo _settingsRepo;
 		private bool _alwaysClearCache = false;
 		private bool _deleteModWithoutWarning = false;
+		private Settings _settings;
 
-		public SettingsViewModel(SettingsModel model) 
+		public SettingsViewModel(ISettingsRepo settingsRepo) 
 		{
-			_model = model;
+			_settingsRepo = settingsRepo;
+			_settings = new();
 
-			//IObservable<bool> validateMRRootDir =
-			//this.WhenAnyValue(
-			//	x => x.MRRootDirectory,
-			//	x => x.IsCorrectMRRootDir,
-			//	(dir, isCorrect) => string.IsNullOrWhiteSpace(dir) || isCorrect == true);
-
-			//this.ValidationRule(vm => vm.MRRootDirectory, validateMRRootDir, Res.WrongPath);
-
-			//this.WhenAnyValue(vm => vm.MRRootDirectory)
-			//	.Subscribe(x => this.RaisePropertyChanged(nameof(IsCorrectMRRootDir)));
-
-
-			//BrowseMRRootDirCommand = ReactiveCommand.Create(BrowseMRRootDir);
-
-			var canSave = this.WhenAnyValue(
-				vm => vm.CanSave, can => can == true);
-
-			SaveCommand = ReactiveCommand.Create(Save, canSave);
-
-			PropertyChanged += SettingsViewModel_PropertyChanged;
+			this.WhenAnyValue(vm => vm.AlwaysClearCache, vm => vm.DeleteModWithoutWarning)
+				.Subscribe(async (x) => await Save());
 		}
-
-
-		//public ChaptersViewModel ChaptersVM { get; }
-
-		//public string MRRootDirectory
-		//{
-		//	get => _mRRootDirectory;
-		//	set => this.RaiseAndSetIfChanged(ref _mRRootDirectory, value, nameof(MRRootDirectory));
-		//}
 
 		public bool AlwaysClearCache
 		{
@@ -60,55 +36,52 @@ namespace MudRunnerModManager.ViewModels
 		}
 
 
-		public bool CanSave => NeedSave;
+		public bool CanSave => _settings != null && NeedSave;
 
-		private bool NeedSave => _alwaysClearCache != _model.Settings.AlwaysClearCache
-			|| _deleteModWithoutWarning != _model.Settings.DeleteModWithoutWarning;
-
-
-		public ReactiveCommand<Unit, Task> SaveCommand { get; private set; }
+		private bool NeedSave => _alwaysClearCache != _settings.AlwaysClearCache
+			|| _deleteModWithoutWarning != _settings.DeleteModWithoutWarning;
 
 
-		public void Refresh()
+		public async void Refresh()
 		{
-			AlwaysClearCache = _model.Settings.AlwaysClearCache;
-			DeleteModWithoutWarning = _model.Settings.DeleteModWithoutWarning;
+			await BusyAction
+			(
+				_settingsRepo.Load,
+				SetSettings
+			);
 		}
-
-		private void SettingsViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName != nameof(CanSave))
-				this.RaisePropertyChanged(nameof(CanSave));
-		}
-
-		private void ChaptersVM_ChaptersChanged(object? sender, EventArgs e)
-		{
-			this.RaisePropertyChanged(nameof(CanSave));
-		}
-
-		//private async Task BrowseMRRootDir()
-		//{
-		//	string mRRootDir = await DialogManager.OpenFolderDialog();
-		//	if (!string.IsNullOrWhiteSpace(mRRootDir))
-		//	{
-		//		MRRootDirectory = mRRootDir;
-		//	}
-		//}
 
 		public async Task Save()
 		{
-			await BusyAction(async () =>
-			{
-				ApplySettings();
-				await _model.Save();
-				EventTube.PushEvent(this, new EventArgs(), EventKey.SettingsChanged);
-			});
+			if (!CanSave)
+				return;
+
+			await BusyAction
+			(
+				() =>
+				{
+					ApplySettings();
+					_settingsRepo.Save(_settings);
+				}, 
+				() => 
+				{
+					this.RaisePropertyChanged(nameof(CanSave));
+					EventTube.PushEvent(this, new EventArgs(), EventKey.SettingsChanged);
+				}
+			);
 		}
 
 		private void ApplySettings()
 		{
-			_model.Settings.AlwaysClearCache = AlwaysClearCache;
-			_model.Settings.DeleteModWithoutWarning = DeleteModWithoutWarning;
+			_settings.AlwaysClearCache = _alwaysClearCache;
+			_settings.DeleteModWithoutWarning = _deleteModWithoutWarning;
+		}
+
+		private void SetSettings(Settings settings)
+		{
+			_settings = settings;
+			AlwaysClearCache = settings.AlwaysClearCache;
+			DeleteModWithoutWarning = settings.DeleteModWithoutWarning;
 		}
 	}
 }

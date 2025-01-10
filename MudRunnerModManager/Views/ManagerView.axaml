@@ -70,8 +70,7 @@
 			</TabItem>
 			<TabItem Header="{x:Static lang:Resource.Settings}"
 					 FontSize="20"
-					 HorizontalContentAlignment="Center"
-					 IsSelected="{Binding IsSelectedSettings}">				
+					 HorizontalContentAlignment="Center">				
 				<views:SettingsView DataContext="{Binding SettingsVM}"/>
 			</TabItem>
 		</TabControl>

@@ -27,24 +27,22 @@ namespace MudRunnerModManager.Common
 			if (settings.IsEmpty)
 				return;
 
-			RelocateChapters(settings);
-			RelocateMRRootPath(settings);
-
-			settings.Save();
+			if (RelocateChapters(settings) || RelocateMRRootPath(settings))
+				settings.Save();
 		}
 
-		private void RelocateChapters(XmlDoc settings)
+		private bool RelocateChapters(XmlDoc settings)
 		{
 			XmlDoc chapters = new(AppPaths.XmlChaptersFilePath);
 			if (chapters.Exists)
-				return;
+				return false;
 
 			if (!settings.IsPresentElem(new XmlElem(AppConsts.CHAPTERS)))
-				return;
+				return false;
 
 			List<XmlElem> capterSettElems = settings.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.CHAPTER);
 			if (capterSettElems.Count == 0)
-				return;
+				return false;
 
 			chapters.LoadOrCreate();
 
@@ -67,18 +65,20 @@ namespace MudRunnerModManager.Common
 			chapters.Save();
 
 			settings.RemoveXmlNodeElem(chElem);
+
+			return true;
 		}
 
-		private void RelocateMRRootPath(XmlDoc settings)
+		private bool RelocateMRRootPath(XmlDoc settings)
 		{
 			XmlDoc gamesRootPaths = new(AppPaths.XmlGameRootPathsFilePath);
 			if (gamesRootPaths.Exists)
-				return;
+				return false;
 
 			XmlElem? mrRootSettElem = settings.GetXmlItem<XmlElem>(elem => elem.Name == SettingsConsts.MUDRUNNER_ROOT);
 
 			if(mrRootSettElem == null) 
-				return;
+				return false;
 
 			gamesRootPaths.LoadOrCreate();
 
@@ -93,6 +93,8 @@ namespace MudRunnerModManager.Common
 			gamesRootPaths.Save();
 
 			settings.RemoveXmlElem(mrRootSettElem);
+
+			return true;
 		}
 	}
 }

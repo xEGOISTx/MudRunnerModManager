@@ -4,13 +4,6 @@ using System.Linq;
 
 namespace MudRunnerModManager.Common.AppRepo
 {
-	public class ChapterInfo(string name, string path)
-	{
-		public string Name { get; } = name;
-		public string Path { get; } = path;
-	}
-
-
 	public class XmlChapterInfosRepo : IChapterInfosRepo
 	{
 		private readonly string _filePath;

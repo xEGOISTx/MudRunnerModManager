@@ -1,6 +1,5 @@
 ﻿using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
-using MudRunnerModManager.Common.AppSettings;
 using MudRunnerModManager.Common.Exstensions;
 using MudRunnerModManager.Models.ArchiveWorker;
 using System.Collections.Generic;
@@ -15,16 +14,17 @@ namespace MudRunnerModManager.Models
 		private readonly ModExtractor _modExtractor = new(new ArchiveExtractor());
 		private readonly IChapterInfosRepo _chapterInfosRepo;
 		private readonly string _gameRootPath;
+		private readonly ISettingsRepo _settingsRepo;
 
-		public ModsModel(IChapterInfosRepo chapterInfosRepo, Settings settings, string gameRootPath)
+		public ModsModel(IChapterInfosRepo chapterInfosRepo, ISettingsRepo settingsRepo, string gameRootPath)
 		{
 			_chapterInfosRepo = chapterInfosRepo;
-			Settings = settings;
+			_settingsRepo = settingsRepo;
 			_gameRootPath = gameRootPath;
 		}
 
 
-		public SettingsBase Settings { get; }
+		//public SettingsBase Settings { get; }
 
 		private FileInfo Config => new($@"{_gameRootPath}\{AppConsts.CONFIG_XML}");
 
@@ -71,7 +71,6 @@ namespace MudRunnerModManager.Models
 			return new Mod(mod.DirInfo, chapter, mod.Size);
 		}
 
-
 		public List<Mod> GetMods()
 		{
 			List<ChapterBase> chapters = GetChapters();
@@ -111,6 +110,11 @@ namespace MudRunnerModManager.Models
 			}
 
 			return chapters;
+		}
+
+		public Settings GetSettings()
+		{
+			return _settingsRepo.Load();
 		}
 
 		private static List<Mod> GetChapterMods(ChapterBase chapter)

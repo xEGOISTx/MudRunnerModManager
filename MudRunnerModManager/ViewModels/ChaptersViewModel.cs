@@ -54,7 +54,7 @@ namespace MudRunnerModManager.ViewModels
 				_model.GetChapters,
 				chapters => 
 				{
-					Chapters = new ObservableCollection<ChapterViewModel>(chapters.Select(ch => new ChapterViewModel(ch)));
+					Chapters = new ObservableCollection<ChapterViewModel>(chapters.OrderBy(ch => ch.Name).Select(ch => new ChapterViewModel(ch)));
 				}
 			);
 

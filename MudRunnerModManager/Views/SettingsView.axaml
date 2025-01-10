@@ -18,27 +18,6 @@
 				Padding="4">
 
 			<Grid RowDefinitions="*, auto">
-				<!--<Grid ColumnDefinitions="*, auto"
-					  RowDefinitions="auto, auto"
-					  Margin="0,7,0,0">
-
-					<TextBlock Grid.ColumnSpan="2"
-							   Text="{x:Static lang:Resource.SelectMudRunnerRootFolder}"/>
-
-					<TextBox Grid.Row="2"
-							 HorizontalAlignment="Stretch"
-							 VerticalAlignment="Top"
-							 Text="{Binding MRRootDirectory}"/>
-
-					<Button Grid.Column="1" Grid.Row="2"
-							Content="{x:Static lang:Resource.Browse}"
-							VerticalAlignment="Top"
-							Margin="2,0,0,0"
-							HorizontalAlignment="Stretch"
-							HorizontalContentAlignment="Center"
-							Command="{Binding BrowseMRRootDirCommand}"
-							Background="DarkSlateGray"/>
-				</Grid>-->
 
 				<Grid RowDefinitions="auto, auto"
 					  Grid.Row="0">
@@ -49,15 +28,6 @@
 							  Content="{x:Static lang:Resource.DeleteModWithoutWarning}"
 							  IsChecked="{Binding DeleteModWithoutWarning}"/>
 				</Grid>
-
-				<Button Grid.Row="1"
-						Content="{x:Static lang:Resource.Save}"
-						HorizontalAlignment="Stretch"
-						HorizontalContentAlignment="Center"
-						Command="{Binding SaveCommand}"
-						Margin="0,4,0,0"
-						Background="DarkSlateGray"/>
-
 			</Grid>
 		</Border>
 	</Grid>

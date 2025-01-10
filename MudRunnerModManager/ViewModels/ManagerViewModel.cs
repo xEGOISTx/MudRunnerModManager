@@ -1,6 +1,5 @@
 ﻿using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
-using MudRunnerModManager.Common.AppSettings;
 using MudRunnerModManager.Models;
 using ReactiveUI;
 using System.IO;
@@ -41,22 +40,22 @@ public class ManagerViewModel : ViewModelBase
 	public ChaptersViewModel? ChaptersVM { get; set; }
 	public GameRootPathViewModel? GameRootPathVM { get; set; }
 
-	public bool IsSelectedSettings
-	{
-		get => _isSelectedSettings;
-		set
-		{
-			if(_isSelectedSettings != value)
-			{
-				if (_isSelectedSettings && !value)
-				{
-					SaveSettingsIfNeed();
-				}
-				_isSelectedSettings = value;
-				this.RaisePropertyChanged(nameof(IsSelectedSettings));
-			}
-		}
-	}
+	//public bool IsSelectedSettings
+	//{
+	//	get => _isSelectedSettings;
+	//	set
+	//	{
+	//		if(_isSelectedSettings != value)
+	//		{
+	//			if (_isSelectedSettings && !value)
+	//			{
+	//				SaveSettingsIfNeed();
+	//			}
+	//			_isSelectedSettings = value;
+	//			this.RaisePropertyChanged(nameof(IsSelectedSettings));
+	//		}
+	//	}
+	//}
 
 	public bool IsBusy
 	{
@@ -125,17 +124,17 @@ public class ManagerViewModel : ViewModelBase
 		}
 	}
 
-	private async void SaveSettingsIfNeed()
-	{
-		if(SettingsVM != null && SettingsVM.CanSave)
-		{
-			var res = await DialogManager.ShowMessageDialog(Res.SettingsHaveBeenChangedSaveIt, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
-			if (res == DialogButtonResult.Yes)
-				await SettingsVM.Save();
-			if (res == DialogButtonResult.No)
-				SettingsVM.Refresh();
-		}
-	}
+	//private async void SaveSettingsIfNeed()
+	//{
+	//	if(SettingsVM != null && SettingsVM.CanSave)
+	//	{
+	//		var res = await DialogManager.ShowMessageDialog(Res.SettingsHaveBeenChangedSaveIt, DialogManager.YesNo, AdditionalWindows.Dialogs.DialogImage.Question);
+	//		if (res == DialogButtonResult.Yes)
+	//			await SettingsVM.Save();
+	//		if (res == DialogButtonResult.No)
+	//			SettingsVM.Refresh();
+	//	}
+	//}
 
 	private async void ShowManagerView(bool refresh)
 	{
@@ -147,13 +146,14 @@ public class ManagerViewModel : ViewModelBase
 		if (gameRootPath == null)
 			throw new System.Exception("Root path to game not exist");
 			
-		Settings settings = await Settings.GetInstance();
+		//Settings settings = await Settings.GetInstance();
 
 		XmlChapterInfosRepo chaptersRepo = new(AppPaths.XmlChaptersFilePath);
+		XmlSettingsRepo settingsRepo = new(AppPaths.XmlSettingsFilePath);
 
 		if (ModsVM == null)
 		{
-			ModsVM = new ModsViewModel(new ModsModel(chaptersRepo, settings, gameRootPath.Path), new CacheCleaner(AppPaths.MudRunnerCacheDir));
+			ModsVM = new ModsViewModel(new ModsModel(chaptersRepo, settingsRepo, gameRootPath.Path), new CacheCleaner(AppPaths.MudRunnerCacheDir));
 			ModsVM.BusyChanged += BusyVM_BusyChanged;
 			this.RaisePropertyChanged(nameof(ModsVM));
 		}
@@ -168,7 +168,7 @@ public class ManagerViewModel : ViewModelBase
 
 		if(SettingsVM == null)
 		{
-			SettingsVM = new SettingsViewModel(new SettingsModel(settings));
+			SettingsVM = new SettingsViewModel(settingsRepo);
 			SettingsVM.BusyChanged += BusyVM_BusyChanged;
 			this.RaisePropertyChanged(nameof(SettingsVM));
 		}

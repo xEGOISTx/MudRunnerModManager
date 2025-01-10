@@ -1,49 +1,49 @@
-﻿using System.Threading.Tasks;
+﻿//using System.Threading.Tasks;
 
-namespace MudRunnerModManager.Common.AppSettings
-{
-    public class Settings : SettingsBase, ISettings
-    {
-        private static Settings? _instance;
+//namespace MudRunnerModManager.Common.AppSettings
+//{
+//    public class Settings : SettingsBase, ISettings
+//    {
+//        private static Settings? _instance;
 
-        private Settings() { }
+//        private Settings() { }
 
 
-        public static ISettingsProvider SettingsProvider { get; set; } = new XmlSettingsProvider(AppPaths.XmlSettingsFilePath);
+//        public static ISettingsProvider SettingsProvider { get; set; } = new XmlSettingsProvider(AppPaths.XmlSettingsFilePath);
 
-		public new bool AlwaysClearCache
-        { 
-            get => base.AlwaysClearCache; 
-            set => base.AlwaysClearCache = value; 
-        }
-		public new bool DeleteModWithoutWarning
-        { 
-            get => base.DeleteModWithoutWarning; 
-            set => base.DeleteModWithoutWarning = value; 
-        }
+//		public new bool AlwaysClearCache
+//        { 
+//            get => base.AlwaysClearCache; 
+//            set => base.AlwaysClearCache = value; 
+//        }
+//		public new bool DeleteModWithoutWarning
+//        { 
+//            get => base.DeleteModWithoutWarning; 
+//            set => base.DeleteModWithoutWarning = value; 
+//        }
 
-		public static async Task<Settings> GetInstance()
-		{
-			if (_instance == null)
-			{
-				_instance = new Settings();
-				await _instance.LoadAsync();
-			}
+//		public static async Task<Settings> GetInstance()
+//		{
+//			if (_instance == null)
+//			{
+//				_instance = new Settings();
+//				await _instance.LoadAsync();
+//			}
 
-			return _instance;
-		}
+//			return _instance;
+//		}
 
-		public async Task LoadAsync()
-        {
-            if (SettingsProvider != null)
-                await SettingsProvider.LoadAsync(this);
-        }
+//		public async Task LoadAsync()
+//        {
+//            if (SettingsProvider != null)
+//                await SettingsProvider.LoadAsync(this);
+//        }
 
-        public async Task SaveAsync()
-        {
-            if (SettingsProvider != null)
-                await SettingsProvider.SaveAsync(this);
-        }
+//        public async Task SaveAsync()
+//        {
+//            if (SettingsProvider != null)
+//                await SettingsProvider.SaveAsync(this);
+//        }
 
-    }
-}
+//    }
+//}

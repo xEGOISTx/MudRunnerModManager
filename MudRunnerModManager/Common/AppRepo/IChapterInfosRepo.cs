@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MudRunnerModManager.Common.AppRepo
 {
@@ -10,5 +9,11 @@ namespace MudRunnerModManager.Common.AppRepo
 		IEnumerable<ChapterInfo> GetAll();
 		IEnumerable<ChapterInfo> Get(string gameRootPaht);
 		void Rename(ChapterInfo chapter, ChapterInfo newName);
+	}
+
+	public class ChapterInfo(string name, string path)
+	{
+		public string Name { get; } = name;
+		public string Path { get; } = path;
 	}
 }

@@ -15,6 +15,7 @@ using MudRunnerModManager.AdditionalWindows.Dialogs;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.ObjectModel;
+using MudRunnerModManager.Common.AppRepo;
 
 namespace MudRunnerModManager.ViewModels
 {
@@ -93,7 +94,9 @@ namespace MudRunnerModManager.ViewModels
 			if (SelectedMod == null)
 				return;
 
-			if (!_model.Settings.DeleteModWithoutWarning)
+			var settings = await BusyAction(_model.GetSettings);
+
+			if (!settings.Success || (settings.Success && !settings.Value.DeleteModWithoutWarning))
 			{
 				string message = string.Format(Res.DeleteMod, SelectedMod.Name);
 				var res = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
@@ -134,13 +137,13 @@ namespace MudRunnerModManager.ViewModels
 			if (SelectedMod == null)
 				return;
 
-			var result = await BusyAction(() => GetRelocModConditions(SelectedMod));
-			if(result.Success)
+			var validationConds = await BusyAction(() => GetRelocModConditions(SelectedMod));
+			if(validationConds.Success)
 			{
 				var res = await DialogManager.ShowSelectItemDialog(_chapters.Where(ch => ch.Name != SelectedMod.ChapterName),
 					chapter => chapter.Name,
 					Res.SelectChapter,
-					result.Value);
+					validationConds.Value);
 
 				if (res.Result != DialogButtonResult.OK)
 					return;
@@ -222,7 +225,7 @@ namespace MudRunnerModManager.ViewModels
 				() =>
 				{
 					var chapters = _model.GetChapters();
-					_chapters = new(chapters.Select(ch => new ChapterBaseViewModel(ch)));
+					_chapters = new(chapters.Select(ch => new ChapterBaseViewModel(ch)).OrderByDescending(ch => ch.Model.IsRoot).ThenBy(ch => ch.Name));
 					return _model.GetMods(chapters);
 				},
 				mods => AddedMods = new ObservableCollection<ModViewModel>(mods
@@ -285,17 +288,19 @@ namespace MudRunnerModManager.ViewModels
 					});
 				}
 
-				return chapters.OrderBy(ch => ch.Name).ToList();
+				return chapters;
 			});
 		}
 
 		private async Task ClearCacheIfNeed()
 		{
-			var res = await BusyAction(_cacheCleaner.IsPresentCache);
-			if (res.Success && res.Value == true)
+			var isPresentCache = await BusyAction(_cacheCleaner.IsPresentCache);
+
+			if (isPresentCache.Success && isPresentCache.Value == true)
 			{
+				var settings = await BusyAction(_model.GetSettings);
 				bool clearCache = false;
-				if (!_model.Settings.AlwaysClearCache)
+				if (!settings.Success || (settings.Success && !settings.Value.AlwaysClearCache))
 				{
 					string message = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
 

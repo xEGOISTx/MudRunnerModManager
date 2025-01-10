@@ -4,18 +4,6 @@ using System.Linq;
 
 namespace MudRunnerModManager.Common.AppRepo
 {
-	public class GameRootPath
-	{
-		public GameRootPath(string path, string gameName)
-		{
-			Path = path;
-			GameName = gameName;
-		}
-
-		public string Path { get; }
-		public string GameName { get; }
-	}
-
 	public class XmlGamesRootPathsRepo : IGamesRootPathsRepo
 	{
 		private readonly string _filePath;
