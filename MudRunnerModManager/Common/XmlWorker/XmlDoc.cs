@@ -363,7 +363,7 @@ namespace MudRunnerModManager.Common.XmlWorker
         {           
 			var elem = GetXmlItem<XmlEndElem>(elem => elem.Name == elemName);
             endElem = elem is not null ? elem : new XmlEndElem("");
-			return endElem != null;
+			return elem is not null;
 		}
     }
 }

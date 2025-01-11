@@ -106,8 +106,8 @@ namespace MudRunnerModManager.Common
 			SaveConfig(xmlConfig);
 		}
 
-        public void DeleteChapter(DirectoryInfo chapter, FileInfo config)
-        {
+		public void DeleteChapter(DirectoryInfo chapter, FileInfo config)
+		{
 			XmlDoc xmlConfig = new(config.FullName);
 			if (!xmlConfig.Exists)
 				return;
@@ -119,6 +119,9 @@ namespace MudRunnerModManager.Common
 				&& elem.Attributes.Count > 0
 				&& elem.Attributes.First().Name == AppConsts.PATH
 				&& elem.Attributes.First().Value.Contains($@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}"));
+
+			if (chapterXmlElems.Count == 0)
+				return;
 
 			foreach (var xmlElem in chapterXmlElems)
 			{

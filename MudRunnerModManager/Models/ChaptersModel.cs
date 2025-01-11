@@ -90,11 +90,13 @@ namespace MudRunnerModManager.Models
 
 		public HashSet<string> GetRootChapterModNames()
 		{
+			DirectoryInfo rootChDirInfo = new($@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
+			if (!rootChDirInfo.Exists)
+				return [];
+
 			List<string> mods = [];
 
 			HashSet<string> chapterNames = new(_chapterInfosRepo.Get(_gameRootPath).Select(ch => ch.Name));
-
-			DirectoryInfo rootChDirInfo = new($@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
 
 			return rootChDirInfo.GetDirectories().Where(dir => !chapterNames.Contains(dir.Name)).Select(dir => dir.Name).ToHashSet();
 		}
