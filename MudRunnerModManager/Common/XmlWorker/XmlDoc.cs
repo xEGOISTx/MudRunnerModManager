@@ -44,11 +44,16 @@ namespace MudRunnerModManager.Common.XmlWorker
 
         public void LoadOrCreate()
         {
-			if (!File.Exists(Path))
-				File.Create(Path).Close();
-
+            if (!Exists)
+                Create();
+			
             Load();
 		}
+
+        public void Create()
+        {
+            Create(Path);
+        }
 
 		public async Task LoadOrCreateAsync()
         {
@@ -208,6 +213,9 @@ namespace MudRunnerModManager.Common.XmlWorker
 
         public void Save(string destFileName)
         {
+            if (!File.Exists(destFileName))
+                Create(destFileName);
+
 			using (Stream stream = File.Create(destFileName))
 			{
 				XmlWriterSettings settings = new XmlWriterSettings();
@@ -284,6 +292,21 @@ namespace MudRunnerModManager.Common.XmlWorker
                 Copy(destFileName, overwrite);
             });
         }
+
+        private void Create(string filePath)
+        {
+			var file = new FileInfo(filePath);
+
+			if (!file.Exists)
+			{
+				var dir = file.Directory ?? throw new Exception($"Invalid file path \"{filePath}\"");
+
+				if (!dir.Exists)
+					dir.Create();
+
+				File.Create(filePath).Close();
+			}
+		}
 
         private List<IXmlItem> ReadXml()
         {
