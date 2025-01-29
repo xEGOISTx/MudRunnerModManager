@@ -1,5 +1,4 @@
-﻿using MudRunnerModManager.Common;
-using MudRunnerModManager.Common.AppRepo;
+﻿using MudRunnerModManager.Common.AppRepo;
 using MudRunnerModManager.Common.Exstensions;
 using MudRunnerModManager.Models.ArchiveWorker;
 using System.Collections.Generic;
@@ -8,25 +7,25 @@ using System.Linq;
 
 namespace MudRunnerModManager.Models
 {
-    public class ModsModel
+    public class ModsModel : IModsModel
 	{
-		private readonly ConfigManager _configManager = new();
+		//todo: в будущем нужна абстракция для ModExtractor
 		private readonly ModExtractor _modExtractor = new(new ArchiveExtractor());
 		private readonly IChapterInfosRepo _chapterInfosRepo;
 		private readonly string _gameRootPath;
 		private readonly ISettingsRepo _settingsRepo;
+		private readonly string _relativePathToRootModsDir;
 
-		public ModsModel(IChapterInfosRepo chapterInfosRepo, ISettingsRepo settingsRepo, string gameRootPath)
+		public ModsModel(IChapterInfosRepo chapterInfosRepo, 
+			ISettingsRepo settingsRepo, 
+			string gameRootPath, 
+			string relativePathToRootModsDir)
 		{
 			_chapterInfosRepo = chapterInfosRepo;
 			_settingsRepo = settingsRepo;
 			_gameRootPath = gameRootPath;
+			_relativePathToRootModsDir = relativePathToRootModsDir;
 		}
-
-
-		//public SettingsBase Settings { get; }
-
-		private FileInfo Config => new($@"{_gameRootPath}\{AppConsts.CONFIG_XML}");
 
 		public Mod AddMod(FileInfo modArchive, string modName, ChapterBase chapter)
 		{
@@ -39,10 +38,6 @@ namespace MudRunnerModManager.Models
 			if (!res)
 				throw new System.Exception("Failed unzip archive");
 
-			_configManager.AddModPath(modDectinationDir, Config);
-
-			ModFileCorrection(modDectinationDir);
-
 			return new Mod(modDectinationDir, chapter, modDectinationDir.GetSize());
 		}
 
@@ -52,22 +47,17 @@ namespace MudRunnerModManager.Models
 				return;
 
 			Directory.Delete(mod.DirInfo.FullName, true);
-			_configManager.DeleteModPath(mod.DirInfo, Config);
 		}
 
 		public Mod RenameMod(Mod mod, string modName)
 		{
-			_configManager.RenameMod(mod.DirInfo, modName, Config);
 			mod.DirInfo.MoveTo(@$"{mod.DirInfo.Parent}\{modName}");
-
 			return new Mod(mod.DirInfo, mod.Chapter, mod.Size);
 		}
 
 		public Mod RelocateMod(Mod mod, ChapterBase chapter)
 		{
-			 _configManager.ChangeModChapter(mod.DirInfo, new DirectoryInfo(chapter.Path), Config);
 			mod.DirInfo.MoveTo($@"{chapter.Path}\{mod.Name}");
-
 			return new Mod(mod.DirInfo, chapter, mod.Size);
 		}
 
@@ -98,15 +88,17 @@ namespace MudRunnerModManager.Models
 
 			IEnumerable<ChapterInfo> chapterInfos = _chapterInfosRepo.Get(_gameRootPath);
 
+			var modsRootDirName = new DirectoryInfo(_relativePathToRootModsDir).Name;
+
 			ChapterInfo rootChapterInfo = new(
-				AppConsts.MODS_ROOT_DIR,
-				$@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}"
+				modsRootDirName ?? throw new System.Exception($"Invalid path {_relativePathToRootModsDir}"),
+				$@"{_gameRootPath}\{_relativePathToRootModsDir}"
 			);
-			chapters.Add(new ChapterBase(rootChapterInfo));
+			chapters.Add(new ChapterBase(rootChapterInfo, true));
 
 			foreach (var chapterInfo in chapterInfos)
 			{
-				chapters.Add(new ChapterBase(chapterInfo));
+				chapters.Add(new ChapterBase(chapterInfo, false));
 			}
 
 			return chapters;
@@ -156,26 +148,6 @@ namespace MudRunnerModManager.Models
 
 			return mods;
 		}
-		
-		private void ModFileCorrection(DirectoryInfo modRootDir)
-		{
-			DirectoryInfo levelsDir = new DirectoryInfo(@$"{modRootDir.FullName}\levels");
-
-			if (!levelsDir.Exists)
-				return;
-
-			var extensions = new[] { "*.dds", "*.stg" };
-			var files = extensions.SelectMany(ext => levelsDir.GetFiles(ext));
-
-			foreach (var file in files)
-			{
-				if (!file.Name.StartsWith("level_"))
-				{
-					file.MoveTo($@"{file.Directory}\level_{file.Name}", true);
-				}
-			}
-		}
-
 	}
 
 	public class ModBase

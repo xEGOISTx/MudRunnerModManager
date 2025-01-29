@@ -21,13 +21,13 @@ namespace MudRunnerModManager.ViewModels
 {
 	public class ModsViewModel : BusyViewModel
 	{
-		private readonly ModsModel _model;
+		private readonly IModsModel _model;
 		private readonly CacheCleaner _cacheCleaner;
 		private ObservableCollection<ModViewModel> _addedMods = [];
 		private ModViewModel? _selectedMod;
 		private List<ChapterBaseViewModel> _chapters = [];
 
-		public ModsViewModel(ModsModel model, CacheCleaner cacheCleaner)
+		public ModsViewModel(IModsModel model, CacheCleaner cacheCleaner)
 		{
 			_model = model;
 			_cacheCleaner = cacheCleaner;
@@ -302,7 +302,7 @@ namespace MudRunnerModManager.ViewModels
 				bool clearCache = false;
 				if (!settings.Success || (settings.Success && !settings.Value.AlwaysClearCache))
 				{
-					string message = string.Format(Res.DeleteCacheFrom, AppPaths.MudRunnerCacheDir);
+					string message = string.Format(Res.DeleteCacheFrom, _cacheCleaner.CacheDirectory.FullName);
 
 					var dialogRes = await DialogManager.ShowMessageDialog(message, DialogManager.YesNo, DialogImage.Question);
 					if (dialogRes == DialogButtonResult.Yes)

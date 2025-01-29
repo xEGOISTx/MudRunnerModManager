@@ -169,10 +169,33 @@ namespace MudRunnerModManager.Common.XmlWorker
             }
 		}
 
-        public bool IsPresentElem(XmlElem element)
+        public bool IsPresentElem(XmlElem element, bool ignoreAttributes = false)
         {
-            var elem = GetXmlItem<XmlElem>(elem => elem == element);
-            return elem is not null;
+            XmlElem? elem;
+            if (!ignoreAttributes)
+                elem = GetXmlItem<XmlElem>(elem => elem == element);
+            else
+				elem = GetXmlItem<XmlElem>(elem => elem.Name == element.Name);
+
+			return elem is not null;
+        }
+
+        public bool IsPresentRootElem(string rootElementName)
+        {
+            if (IsPresentElem(new XmlElem(rootElementName), true))
+            {
+                if(_xmlItems.Count == 1)
+                    return true;
+                else
+                {
+                    if(TryGetEndElem(rootElementName, out _))
+                        return true;
+                    else
+                        return false;
+                }
+            }
+            else
+                return false;
         }
 
 		public bool IsNode(string elementName)

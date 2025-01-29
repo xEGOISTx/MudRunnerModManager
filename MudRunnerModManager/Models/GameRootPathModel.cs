@@ -2,12 +2,6 @@
 
 namespace MudRunnerModManager.Models
 {
-	//пока тут
-	public static class GameName
-	{
-		public const string MUDRUNNER = "MudRunner";
-	}
-
 	public class GameRootPathModel
 	{
 		private readonly IGamesRootPathsRepo _gamesRootPathsRepo;

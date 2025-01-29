@@ -1,6 +1,5 @@
 ﻿using MudRunnerModManager.Common.XmlWorker;
 using System.Linq;
-using SConsts = MudRunnerModManager.Common.SettingsConsts;
 
 namespace MudRunnerModManager.Common.AppRepo
 {
@@ -22,18 +21,18 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			xmlSettings.Load();
 
-			XmlElem? alwaysClearCache = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == SConsts.ALWAYS_CLEAR_CACHE);
+			XmlElem? alwaysClearCache = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == XmlConsts.ALWAYS_CLEAR_CACHE);
 			if (alwaysClearCache is not null)
 			{
-				string? value = alwaysClearCache.Attributes.FirstOrDefault(atr => atr.Name == SConsts.VALUE)?.Value;
+				string? value = alwaysClearCache.Attributes.FirstOrDefault(atr => atr.Name == XmlConsts.VALUE)?.Value;
 				if (!string.IsNullOrWhiteSpace(value) && bool.TryParse(value, out bool val))
 					settings.AlwaysClearCache = val;
 			}
 
-			XmlElem? delWithoutWarning = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == SConsts.DELETE_MOD_WITHOUT_WARNING);
+			XmlElem? delWithoutWarning = xmlSettings.GetXmlItem<XmlElem>(elem => elem.Name == XmlConsts.DELETE_MOD_WITHOUT_WARNING);
 			if (delWithoutWarning is not null)
 			{
-				string? value = delWithoutWarning.Attributes.FirstOrDefault(atr => atr.Name == SConsts.VALUE)?.Value;
+				string? value = delWithoutWarning.Attributes.FirstOrDefault(atr => atr.Name == XmlConsts.VALUE)?.Value;
 				if (!string.IsNullOrWhiteSpace(value) && bool.TryParse(value, out bool val))
 					settings.DeleteModWithoutWarning = val;
 			}
@@ -49,16 +48,16 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			xmlSettings.Clear();
 
-			XmlElem settElem = new(SConsts.SETTINGS);
+			XmlElem settElem = new(XmlConsts.SETTINGS);
 			xmlSettings.AddRootXmlElem(settElem);
 
-			XmlElem alwaysClearCache = new(SConsts.ALWAYS_CLEAR_CACHE);
-			alwaysClearCache.Attributes.Add(new XmlElemAttribute(SConsts.VALUE, settings.AlwaysClearCache.ToString()));
-			xmlSettings.AddXmlElem(alwaysClearCache, SConsts.SETTINGS);
+			XmlElem alwaysClearCache = new(XmlConsts.ALWAYS_CLEAR_CACHE);
+			alwaysClearCache.Attributes.Add(new XmlElemAttribute(XmlConsts.VALUE, settings.AlwaysClearCache.ToString()));
+			xmlSettings.AddXmlElem(alwaysClearCache, XmlConsts.SETTINGS);
 
-			XmlElem delWithoutWarning = new(SConsts.DELETE_MOD_WITHOUT_WARNING);
-			delWithoutWarning.Attributes.Add(new XmlElemAttribute(SConsts.VALUE, settings.DeleteModWithoutWarning.ToString()));
-			xmlSettings.AddXmlElem(delWithoutWarning, SConsts.SETTINGS);
+			XmlElem delWithoutWarning = new(XmlConsts.DELETE_MOD_WITHOUT_WARNING);
+			delWithoutWarning.Attributes.Add(new XmlElemAttribute(XmlConsts.VALUE, settings.DeleteModWithoutWarning.ToString()));
+			xmlSettings.AddXmlElem(delWithoutWarning, XmlConsts.SETTINGS);
 
 			xmlSettings.Save();
 		}

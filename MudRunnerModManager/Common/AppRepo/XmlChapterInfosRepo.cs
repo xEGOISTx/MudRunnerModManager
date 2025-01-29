@@ -26,7 +26,7 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			void AddRoot()
 			{
-				XmlElem chElem = new(AppConsts.CHAPTERS);
+				XmlElem chElem = new(XmlConsts.CHAPTERS);
 				xmlChapters.AddRootXmlElem(chElem);
 			}
 		
@@ -34,7 +34,7 @@ namespace MudRunnerModManager.Common.AppRepo
 			{
 				AddRoot();
 			}
-			else if(!xmlChapters.IsPresentElem(new(AppConsts.CHAPTERS)))
+			else if(!xmlChapters.IsPresentElem(new(XmlConsts.CHAPTERS)))
 			{
 				xmlChapters.Clear();
 				AddRoot();
@@ -44,7 +44,7 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			if (!xmlChapters.IsPresentElem(chapterElem))
 			{
-				xmlChapters.AddXmlElem(chapterElem, AppConsts.CHAPTERS);
+				xmlChapters.AddXmlElem(chapterElem, XmlConsts.CHAPTERS);
 				xmlChapters.Save();
 			}
 		}
@@ -125,16 +125,16 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			var newElem = CreateChapterElem(newName);
 
-			xmlChapters.ReplaceXmlElem(oldElem, newElem, AppConsts.CHAPTERS);
+			xmlChapters.ReplaceXmlElem(oldElem, newElem, XmlConsts.CHAPTERS);
 
 			xmlChapters.Save();
 		}
 
 		private XmlElem CreateChapterElem(ChapterInfo chapter)
 		{
-			XmlElem chapterElem = new(AppConsts.CHAPTER);
-			chapterElem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, chapter.Path));
-			chapterElem.Attributes.Add(new XmlElemAttribute(AppConsts.NAME, chapter.Name));
+			XmlElem chapterElem = new(XmlConsts.CHAPTER);
+			chapterElem.Attributes.Add(new XmlElemAttribute(XmlConsts.PATH, chapter.Path));
+			chapterElem.Attributes.Add(new XmlElemAttribute(XmlConsts.NAME, chapter.Name));
 			return chapterElem;
 		}
 
@@ -144,8 +144,8 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			foreach (XmlElem chapter in chapterXmlElens)
 			{
-				string? chapterPath = chapter.Attributes.FirstOrDefault(atr => atr.Name == AppConsts.PATH)?.Value;
-				string? chapterName = chapter.Attributes.FirstOrDefault(atr => atr.Name == AppConsts.NAME)?.Value;
+				string? chapterPath = chapter.Attributes.FirstOrDefault(atr => atr.Name == XmlConsts.PATH)?.Value;
+				string? chapterName = chapter.Attributes.FirstOrDefault(atr => atr.Name == XmlConsts.NAME)?.Value;
 				if (!string.IsNullOrWhiteSpace(chapterPath) && !string.IsNullOrWhiteSpace(chapterName))
 					chapterInfos.Add(new(chapterName, chapterPath));
 			}
@@ -156,12 +156,12 @@ namespace MudRunnerModManager.Common.AppRepo
 		private IEnumerable<XmlElem> GetChapterXmlElems(XmlDoc xmlChapters, string? gameRootPaht = null)
 		{
 			if(gameRootPaht == null)
-				return xmlChapters.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.CHAPTER);
+				return xmlChapters.GetXmlItems<XmlElem>(elem => elem.Name == XmlConsts.CHAPTER);
 			else
-				return xmlChapters.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.CHAPTER
+				return xmlChapters.GetXmlItems<XmlElem>(elem => elem.Name == XmlConsts.CHAPTER
 						&& elem.Attributes.Count > 0
-						&& elem.Attributes.FirstOrDefault(atr => atr.Name == AppConsts.PATH) != null
-						&& elem.Attributes.First(atr => atr.Name == AppConsts.PATH).Value.Contains(gameRootPaht));
+						&& elem.Attributes.FirstOrDefault(atr => atr.Name == XmlConsts.PATH) != null
+						&& elem.Attributes.First(atr => atr.Name == XmlConsts.PATH).Value.Contains(gameRootPaht));
 		}
 	}
 }

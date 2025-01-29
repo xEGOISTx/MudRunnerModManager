@@ -43,7 +43,9 @@ namespace MudRunnerModManager.ViewModels
 			}
 		}
 
-		public string SelectRootDirectory => string.Format(Resource.SelecRootDirectoryFor, _model.GameName);
+		public string SelectRootDirectory => string.Format(Resource.SelecRootDirectoryFor, GameName);
+
+		public string GameName => _model.GameName;
 
 		public string Path
 		{
@@ -109,7 +111,7 @@ namespace MudRunnerModManager.ViewModels
 			if (_rootPath != null) 
 				Path = _rootPath.Path;
 
-			IsCancelAvailable = _rootPath != null;
+			IsCancelAvailable = _rootPath != null && ValidationContext.IsValid;
 		}
 
 		private async Task Browse()

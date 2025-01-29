@@ -8,26 +8,31 @@ using System.Linq;
 
 namespace MudRunnerModManager.Models
 {
-	public class ChaptersModel
+	public class ChaptersModel : IChaptersModel
 	{
 		private readonly IChapterInfosRepo _chapterInfosRepo;
-		private readonly ConfigManager _configManager = new();
 		private readonly string _gameRootPath;
+		private readonly string _relativePathToRootModsDir;
 
-		public ChaptersModel(IChapterInfosRepo chapterInfosRepo, string gameRootPath)
+		public ChaptersModel(IChapterInfosRepo chapterInfosRepo, 
+			string gameRootPath, 
+			string relativePathToRootModsDir)
 		{
 			_chapterInfosRepo = chapterInfosRepo;
 			_gameRootPath = gameRootPath;
+			_relativePathToRootModsDir = relativePathToRootModsDir;
 		}
 
 
 		public Chapter AddChapter(string chapterName)
 		{
-			if (string.IsNullOrWhiteSpace(chapterName) 
-				|| chapterName == AppConsts.MODS_ROOT_DIR) 
+			var modsRootDirName = new DirectoryInfo(_relativePathToRootModsDir).Name;
+
+			if (string.IsNullOrWhiteSpace(chapterName) || modsRootDirName == null
+				|| chapterName == modsRootDirName) 
 				throw new Exception("Impossible add chapter");
 
-			DirectoryInfo chapter = new($@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapterName}");
+			DirectoryInfo chapter = new($@"{_gameRootPath}\{_relativePathToRootModsDir}\{chapterName}");
 
 			if (!chapter.Exists)
 				chapter.Create();
@@ -35,7 +40,7 @@ namespace MudRunnerModManager.Models
 			ChapterInfo newChapter = new(chapter.Name, chapter.FullName);
 			_chapterInfosRepo.Add(newChapter);
 
-			return new Chapter(newChapter, 0);
+			return new Chapter(newChapter, 0, false);
 		}
 
 		public void DeleteChapter(Chapter chapter)
@@ -45,10 +50,7 @@ namespace MudRunnerModManager.Models
 
 			DirectoryInfo chapterInfo = new(chapter.Path);
 			if (chapterInfo.Exists)
-			{
 				chapterInfo.Delete(true);
-				_configManager.DeleteChapter(chapterInfo, new FileInfo($@"{_gameRootPath}\{AppConsts.CONFIG_XML}"));
-			}
 
 			_chapterInfosRepo.Delete(chapter.ChapterInfo);
 		}
@@ -63,7 +65,7 @@ namespace MudRunnerModManager.Models
 			{
 				if(Directory.Exists(chapterInfo.Path))
 				{
-					Chapter chapter = new(chapterInfo, GetChapterSize(chapterInfo));
+					Chapter chapter = new(chapterInfo, GetChapterSize(chapterInfo), false);
 					chapters.Add(chapter);
 				}
 			}
@@ -77,7 +79,6 @@ namespace MudRunnerModManager.Models
 				return chapter;
 
 			DirectoryInfo chapterInfo = new(chapter.Path);
-			_configManager.RenameChapter(chapterInfo, newName, new FileInfo($@"{_gameRootPath}\{AppConsts.CONFIG_XML}"));
 
 			string newChapterPath = $@"{chapterInfo.Parent.FullName}\{newName}";
 			ChapterInfo chapterNewName = new(newName, newChapterPath);
@@ -85,12 +86,12 @@ namespace MudRunnerModManager.Models
 			_chapterInfosRepo.Rename(chapter.ChapterInfo, chapterNewName);
 			chapterInfo.MoveTo(newChapterPath);
 
-			return new Chapter(chapterNewName, chapter.Size);
+			return new Chapter(chapterNewName, chapter.Size, chapter.IsRoot);
 		}
 
 		public HashSet<string> GetRootChapterModNames()
 		{
-			DirectoryInfo rootChDirInfo = new($@"{_gameRootPath}\{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}");
+			DirectoryInfo rootChDirInfo = new($@"{_gameRootPath}\{_relativePathToRootModsDir}");
 			if (!rootChDirInfo.Exists)
 				return [];
 
@@ -110,9 +111,10 @@ namespace MudRunnerModManager.Models
 
 	public class ChapterBase
 	{
-		public ChapterBase(ChapterInfo chapterInfo) 
+		public ChapterBase(ChapterInfo chapterInfo, bool isRoot) 
 		{
 			ChapterInfo = chapterInfo;
+			IsRoot = isRoot; 
 		}
 
 		public ChapterInfo ChapterInfo { get; }
@@ -123,12 +125,12 @@ namespace MudRunnerModManager.Models
 
 		public string Path => ChapterInfo.Path;
 
-		public bool IsRoot => ChapterInfo.Name == AppConsts.MODS_ROOT_DIR;
+		public bool IsRoot { get; }
 	}
 
 	public class Chapter : ChapterBase
 	{
-		public Chapter(ChapterInfo chapterInfo, long size) : base(chapterInfo)
+		public Chapter(ChapterInfo chapterInfo, long size, bool isRoot) : base(chapterInfo, isRoot)
 		{
 			Size = size;
 		}

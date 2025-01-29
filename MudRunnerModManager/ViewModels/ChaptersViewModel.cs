@@ -15,11 +15,11 @@ namespace MudRunnerModManager.ViewModels
 {
 	public class ChaptersViewModel : BusyViewModel
 	{
-		private readonly ChaptersModel _model;
+		private readonly IChaptersModel _model;
 		private ObservableCollection<ChapterViewModel> _chapters = [];
 		private ChapterViewModel? _selectedChapter;
 
-		public ChaptersViewModel(ChaptersModel model)
+		public ChaptersViewModel(IChaptersModel model)
 		{
 			_model = model;
 			EventTube.EventPushed += EventTube_EventPushed;

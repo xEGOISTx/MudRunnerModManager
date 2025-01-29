@@ -8,16 +8,15 @@ namespace MudRunnerModManager.Common
         public static string AppDataDir = GetAppDataDir();
 		public static DirectoryInfo AppTempDir = new($@"{AppDataDir}\Temp");
         public static DirectoryInfo MudRunnerCacheDir =
-            new($@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\{AppConsts.MUD_RUNNER}");
+            new($@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\{GameName.MUD_RUNNER}");
+		public static DirectoryInfo SpinTiresCacheDir =
+			new($@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\{GameName.SPIN_TIRES}");
 
+		public static string XmlSettingsFilePath = @$"{AppDataDir}\{XmlConsts.SETTINGS_XML}";
 
-        //public static string MRRootDirRepFile = @$"{AppDataDir}\MRRootDirectory.txt";
+		public static string XmlChaptersFilePath = @$"{AppDataDir}\{XmlConsts.CHAPTERS_XML}";
 
-        public static string XmlSettingsFilePath = @$"{AppDataDir}\settings.xml";
-
-		public static string XmlChaptersFilePath = @$"{AppDataDir}\chapters.xml";
-
-		public static string XmlGameRootPathsFilePath = @$"{AppDataDir}\gamesRootPaths.xml";
+		public static string XmlGameRootPathsFilePath = @$"{AppDataDir}\{XmlConsts.GAMES_ROOT_PATHS_XML}";
 
 		private static string GetAppDataDir()
         {

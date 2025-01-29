@@ -4,18 +4,18 @@ namespace MudRunnerModManager.Common
 {
 	public class CacheCleaner
 	{
-		private readonly DirectoryInfo _cacheDirectory;
-
 		public CacheCleaner(DirectoryInfo cacheDirectory)
 		{
-			_cacheDirectory = cacheDirectory;
+			CacheDirectory = cacheDirectory;
 		}
+
+		public DirectoryInfo CacheDirectory { get; }
 
 		public bool IsPresentCache()
 		{
-			if (Directory.Exists(_cacheDirectory.FullName))
+			if (Directory.Exists(CacheDirectory.FullName))
 			{
-				if (_cacheDirectory.GetDirectories().Length > 0 || _cacheDirectory.GetFiles().Length > 0)
+				if (CacheDirectory.GetDirectories().Length > 0 || CacheDirectory.GetFiles().Length > 0)
 					return true;
 			}
 
@@ -24,14 +24,14 @@ namespace MudRunnerModManager.Common
 
 		public void ClearCache()
 		{
-			if (Directory.Exists(_cacheDirectory.FullName))
+			if (Directory.Exists(CacheDirectory.FullName))
 			{
-				foreach (var dir in _cacheDirectory.GetDirectories())
+				foreach (var dir in CacheDirectory.GetDirectories())
 				{
 					dir.Delete(true);
 				}
 
-				foreach (var file in _cacheDirectory.GetFiles())
+				foreach (var file in CacheDirectory.GetFiles())
 				{
 					file.Delete();
 				}

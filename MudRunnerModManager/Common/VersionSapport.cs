@@ -40,30 +40,30 @@ namespace MudRunnerModManager.Common
 			if (chapters.Exists)
 				return false;
 
-			if (!settings.IsPresentElem(new XmlElem(AppConsts.CHAPTERS)))
+			if (!settings.IsPresentElem(new XmlElem(XmlConsts.CHAPTERS)))
 				return false;
 
-			List<XmlElem> capterSettElems = settings.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.CHAPTER);
+			List<XmlElem> capterSettElems = settings.GetXmlItems<XmlElem>(elem => elem.Name == XmlConsts.CHAPTER);
 			if (capterSettElems.Count == 0)
 				return false;
 
 			chapters.LoadOrCreate();
 
-			XmlElem chElem = new(AppConsts.CHAPTERS);
+			XmlElem chElem = new(XmlConsts.CHAPTERS);
 			chapters.AddRootXmlElem(chElem);
 
 			List<XmlElem> chapterElems = [];
 			foreach (var chapterSettElem in capterSettElems)
 			{
-				XmlElem chapter = new(AppConsts.CHAPTER);
+				XmlElem chapter = new(XmlConsts.CHAPTER);
 				DirectoryInfo chInfo = new(chapterSettElem.Attributes.First().Value);
-				chapter.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, chInfo.FullName));
-				chapter.Attributes.Add(new XmlElemAttribute(AppConsts.NAME, chInfo.Name));
+				chapter.Attributes.Add(new XmlElemAttribute(XmlConsts.PATH, chInfo.FullName));
+				chapter.Attributes.Add(new XmlElemAttribute(XmlConsts.NAME, chInfo.Name));
 
 				chapterElems.Add(chapter);
 			}
 
-			chapters.AddRangeXmlElems(chapterElems, AppConsts.CHAPTERS);
+			chapters.AddRangeXmlElems(chapterElems, XmlConsts.CHAPTERS);
 
 			chapters.Save();
 
@@ -78,20 +78,20 @@ namespace MudRunnerModManager.Common
 			if (gamesRootPaths.Exists)
 				return false;
 
-			XmlElem? mrRootSettElem = settings.GetXmlItem<XmlElem>(elem => elem.Name == SettingsConsts.MUDRUNNER_ROOT);
+			XmlElem? mrRootSettElem = settings.GetXmlItem<XmlElem>(elem => elem.Name == XmlConsts.MUDRUNNER_ROOT);
 
 			if(mrRootSettElem == null) 
 				return false;
 
 			gamesRootPaths.LoadOrCreate();
 
-			XmlElem rootElem = new(AppConsts.GAMES_ROOT_PATHS);
+			XmlElem rootElem = new(XmlConsts.GAMES_ROOT_PATHS);
 			gamesRootPaths.AddRootXmlElem(rootElem);
 
-			XmlElem mrRootPath = new XmlElem(AppConsts.GAME);
-			mrRootPath.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, mrRootSettElem.Attributes.First().Value));
-			mrRootPath.Attributes.Add(new XmlElemAttribute(AppConsts.NAME, GameName.MUDRUNNER));
-			gamesRootPaths.AddXmlElem(mrRootPath, AppConsts.GAMES_ROOT_PATHS);
+			XmlElem mrRootPath = new XmlElem(XmlConsts.GAME);
+			mrRootPath.Attributes.Add(new XmlElemAttribute(XmlConsts.PATH, mrRootSettElem.Attributes.First().Value));
+			mrRootPath.Attributes.Add(new XmlElemAttribute(XmlConsts.NAME, GameName.MUD_RUNNER));
+			gamesRootPaths.AddXmlElem(mrRootPath, XmlConsts.GAMES_ROOT_PATHS);
 
 			gamesRootPaths.Save();
 

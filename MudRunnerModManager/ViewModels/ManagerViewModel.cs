@@ -1,8 +1,19 @@
-﻿using MudRunnerModManager.Common;
+﻿using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using MudRunnerModManager.Common;
 using MudRunnerModManager.Common.AppRepo;
 using MudRunnerModManager.Models;
+using MudRunnerModManager.ModManager.GamesWithModPathsFile.CommonModels;
+using MudRunnerModManager.ModManager.GamesWithModPathsFile.MudRunner;
+using MudRunnerModManager.ModManager.GamesWithModPathsFile.SpinTires;
 using ReactiveUI;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Res = MudRunnerModManager.Lang.Resource;
@@ -17,16 +28,21 @@ public class ManagerViewModel : ViewModelBase
 	private bool _isUpdateAvailable = false;
 	private bool _isShowPathInput = true;
 	private readonly XmlGamesRootPathsRepo _grpRepo = new(AppPaths.XmlGameRootPathsFilePath);
+	private GameInfo? _selectedGameInfo;
+
+	[MemberNotNullWhen(true, nameof(SelectedGameInfo))]
+	private bool _isSelectedGame => SelectedGameInfo != null;
+	private bool _gameChanged = false;
 
 	//todo: пока будет здесь
-	private readonly PathValidationCondition _condition = new PathValidationCondition
-	(
-		path => !string.IsNullOrEmpty(path)
-			&& File.Exists(@$"{path.Trim([' ', '\\'])}\{AppConsts.MUD_RUNNER_EXE}")
-			&& File.Exists(@$"{path.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}"),
-		Res.WrongPath
-	);
-	private readonly string _gameName = GameName.MUDRUNNER;
+	//private readonly PathValidationCondition _condition = new
+	//(
+	//	path => !string.IsNullOrEmpty(path)
+	//		&& File.Exists(@$"{path.Trim([' ', '\\'])}\{AppConsts.MUD_RUNNER_EXE}")
+	//		&& File.Exists(@$"{path.Trim([' ', '\\'])}\{AppConsts.CONFIG_XML}"),
+	//	Res.WrongPath
+	//);
+	//private readonly string _gameName = GameName.MUD_RUNNER;
 
 	public ManagerViewModel() 
 	{
@@ -39,6 +55,21 @@ public class ManagerViewModel : ViewModelBase
 	public SettingsViewModel? SettingsVM { get; set; }
 	public ChaptersViewModel? ChaptersVM { get; set; }
 	public GameRootPathViewModel? GameRootPathVM { get; set; }
+	public List<GameInfo> GameInfos { get; set; } = [];
+	public GameInfo? SelectedGameInfo
+	{
+		get => _selectedGameInfo;
+		set
+		{
+			if ( _selectedGameInfo != value )
+			{
+				_selectedGameInfo = value;
+				_gameChanged = true;
+				InitGameModManager();
+				this.RaisePropertyChanged(nameof(SelectedGameInfo));
+			}
+		}
+	}
 
 	//public bool IsSelectedSettings
 	//{
@@ -84,24 +115,45 @@ public class ManagerViewModel : ViewModelBase
 		AppVersion = $"v{appVer}";
 
 		await Task.Run(() => { new VersionSapport().Execute(); });
-		GameRootPath? gameRootPath = await Task.Run(() => _grpRepo.Get(_gameName));
+
+		GameInfos =
+		[
+			new (GameName.MUD_RUNNER, new Bitmap(AssetLoader.Open(new Uri("avares://MudRunnerModManager/Assets/MudRunner.jpg"))) , new MRGameComponents()),
+			new (GameName.SPIN_TIRES, new Bitmap(AssetLoader.Open(new Uri("avares://MudRunnerModManager/Assets/Spintires.png"))) , new STGameComponents())
+		];
+		this.RaisePropertyChanged(nameof(GameInfos));
+
+		SelectedGameInfo = GameInfos.First();
+
 		IsBusy = false;
 
-		if (gameRootPath == null
-			|| (gameRootPath != null && !_condition.Condition(gameRootPath.Path)))
-		{
-			ShowPathInput();		
-		}
-		else
-		{
-			ShowManagerView(true);
-		}
+		//if (gameRootPath == null
+		//	|| (gameRootPath != null && !_condition.Condition(gameRootPath.Path)))
+		//{
+		//	ShowPathInput();		
+		//}
+		//else
+		//{
+		//	ShowManagerView(true);
+		//}
 
 #if !DEBUG
 		var latestAppVer = await GitHubRepo.GetLatestVersionAsync();
 		if (latestAppVer != null)
 			IsUpdateAvailable = latestAppVer > appVer;
 #endif
+	}
+
+	private async void InitGameModManager()
+	{
+		if (!_isSelectedGame)
+			return;
+
+		GameRootPath? gameRootPath = await Task.Run(() => _grpRepo.Get(SelectedGameInfo.GameName));
+		if(gameRootPath != null && SelectedGameInfo.GameComponents.RootPathValidation.Condition(gameRootPath.Path))//_condition.Condition(gameRootPath.Path)
+			ShowManagerView(false);
+		else
+			ShowPathInput();
 	}
 
 
@@ -136,64 +188,92 @@ public class ManagerViewModel : ViewModelBase
 	//	}
 	//}
 
-	private async void ShowManagerView(bool refresh)
+	private async void ShowManagerView(bool gameRootPathChanged)
 	{
+		if (!_isSelectedGame)
+			return;
+
 		IsShowPathInput = false;
 
-		IsBusy = true;
-
-		GameRootPath? gameRootPath = await Task.Run(() => _grpRepo.Get(_gameName));
-		if (gameRootPath == null)
-			throw new System.Exception("Root path to game not exist");
-			
-		//Settings settings = await Settings.GetInstance();
-
-		XmlChapterInfosRepo chaptersRepo = new(AppPaths.XmlChaptersFilePath);
-		XmlSettingsRepo settingsRepo = new(AppPaths.XmlSettingsFilePath);
-
-		if (ModsVM == null)
+		if(_gameChanged || gameRootPathChanged)
 		{
-			ModsVM = new ModsViewModel(new ModsModel(chaptersRepo, settingsRepo, gameRootPath.Path), new CacheCleaner(AppPaths.MudRunnerCacheDir));
+			IsBusy = true;
+
+			GameRootPath? gameRootPath = await Task.Run(() => _grpRepo.Get(SelectedGameInfo.GameName));
+			if (gameRootPath == null)
+				throw new Exception("Root path to game not exist");
+			
+			XmlChapterInfosRepo chaptersRepo = new(AppPaths.XmlChaptersFilePath);
+			XmlSettingsRepo settingsRepo = new(AppPaths.XmlSettingsFilePath);
+
+			if(ModsVM != null)
+				ModsVM.BusyChanged -= BusyVM_BusyChanged;
+
+			IModsModel modsModel = new ModsModel(chaptersRepo, settingsRepo, gameRootPath.Path, SelectedGameInfo.GameComponents.RelativePathToRootModsDir);
+			modsModel = SelectedGameInfo.GameComponents.GetModsModel(modsModel, gameRootPath.Path);
+
+			ModsVM = new ModsViewModel(modsModel, new CacheCleaner(SelectedGameInfo.GameComponents.CacheDirectory));
 			ModsVM.BusyChanged += BusyVM_BusyChanged;
 			this.RaisePropertyChanged(nameof(ModsVM));
-		}
 
-		if(ChaptersVM == null)
-		{
-			var chaptersModel = new ChaptersModel(chaptersRepo, gameRootPath.Path);
+			if(ChaptersVM != null)
+				ChaptersVM.BusyChanged -= BusyVM_BusyChanged;
+
+			IChaptersModel chaptersModel = new ChaptersModel(chaptersRepo, gameRootPath.Path, SelectedGameInfo.GameComponents.RelativePathToRootModsDir);
+			chaptersModel = SelectedGameInfo.GameComponents.GetChaptersModel(chaptersModel, gameRootPath.Path);
+
 			ChaptersVM = new ChaptersViewModel(chaptersModel);
 			ChaptersVM.BusyChanged += BusyVM_BusyChanged;
 			this.RaisePropertyChanged(nameof(ChaptersVM));
+
+			if(SettingsVM == null)
+			{
+				SettingsVM = new SettingsViewModel(settingsRepo);
+				SettingsVM.BusyChanged += BusyVM_BusyChanged;
+				this.RaisePropertyChanged(nameof(SettingsVM));
+			}
+
+			IsBusy = false;
 		}
 
-		if(SettingsVM == null)
+		if(_gameChanged || gameRootPathChanged)
 		{
-			SettingsVM = new SettingsViewModel(settingsRepo);
-			SettingsVM.BusyChanged += BusyVM_BusyChanged;
-			this.RaisePropertyChanged(nameof(SettingsVM));
+			ModsVM?.Refresh();
+			ChaptersVM?.Refresh();
+			SettingsVM?.Refresh();
 		}
 
-		IsBusy = false;
-
-		if(refresh)
-		{
-			ModsVM.Refresh();
-			ChaptersVM.Refresh();
-			SettingsVM.Refresh();
-		}		
+		_gameChanged = false;
 	}
 
 	private void ShowPathInput()
 	{
-		if(GameRootPathVM == null)
+		if (!_isSelectedGame)
+			return;
+
+		void CreateGameRootPathVM()
 		{
-			GameRootPathVM = new GameRootPathViewModel(new GameRootPathModel(_grpRepo, _gameName), [_condition]);
+			GameRootPathVM = new GameRootPathViewModel(new GameRootPathModel(_grpRepo, SelectedGameInfo.GameName), [SelectedGameInfo.GameComponents.RootPathValidation]);
 			GameRootPathVM.BusyChanged += BusyVM_BusyChanged;
 			GameRootPathVM.PathChanged += GameRootPathVM_PathChanged;
 			GameRootPathVM.Canceled += GameRootPathVM_Canceled;
 			this.RaisePropertyChanged(nameof(GameRootPathVM));
 		}
-		GameRootPathVM.Refresh();
+
+		if (GameRootPathVM == null)
+		{
+			CreateGameRootPathVM();
+		}
+		else if(GameRootPathVM.GameName != SelectedGameInfo.GameName)
+		{
+			GameRootPathVM.BusyChanged -= BusyVM_BusyChanged;
+			GameRootPathVM.PathChanged -= GameRootPathVM_PathChanged;
+			GameRootPathVM.Canceled -= GameRootPathVM_Canceled;
+
+			CreateGameRootPathVM();
+		}
+
+		GameRootPathVM?.Refresh();
 		IsShowPathInput = true;
 	}
 
@@ -207,3 +287,13 @@ public class ManagerViewModel : ViewModelBase
 		ShowManagerView(true);
 	}
 }
+
+public class GameInfo(string gameName, IImage image, IGameComponents gameComponents)
+{
+	public string GameName { get; } = gameName;
+
+	public IGameComponents GameComponents { get; } = gameComponents;
+
+	public IImage Image { get; } = image;
+}
+

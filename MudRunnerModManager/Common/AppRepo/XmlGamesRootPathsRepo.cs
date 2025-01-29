@@ -32,8 +32,8 @@ namespace MudRunnerModManager.Common.AppRepo
 			{
 				return new GameRootPath
 				(
-					xmlElem.Attributes.First(atr => atr.Name == AppConsts.PATH).Value, 
-					xmlElem.Attributes.First(atr => atr.Name == AppConsts.NAME).Value
+					xmlElem.Attributes.First(atr => atr.Name == XmlConsts.PATH).Value, 
+					xmlElem.Attributes.First(atr => atr.Name == XmlConsts.NAME).Value
 				);
 			}
 
@@ -53,7 +53,7 @@ namespace MudRunnerModManager.Common.AppRepo
 
 			void AddRoot()
 			{
-				XmlElem grpElem = new(AppConsts.GAMES_ROOT_PATHS);
+				XmlElem grpElem = new(XmlConsts.GAMES_ROOT_PATHS);
 				xmlGRP.AddRootXmlElem(grpElem);
 			}
 
@@ -61,16 +61,16 @@ namespace MudRunnerModManager.Common.AppRepo
 			{
 				AddRoot();
 			}
-			else if (!xmlGRP.IsPresentElem(new(AppConsts.CHAPTERS)))
+			else if (!xmlGRP.IsPresentElem(new(XmlConsts.GAMES_ROOT_PATHS)))
 			{
 				xmlGRP.Clear();
 				AddRoot();
 			}
 
 			if(TryGetByGameName(xmlGRP, gameRootPath.GameName, out XmlElem presentGRPElem))
-				xmlGRP.ReplaceXmlElem(presentGRPElem, CreateGRPElem(gameRootPath), AppConsts.GAMES_ROOT_PATHS);
+				xmlGRP.ReplaceXmlElem(presentGRPElem, CreateGRPElem(gameRootPath), XmlConsts.GAMES_ROOT_PATHS);
 			else
-				xmlGRP.AddXmlElem(CreateGRPElem(gameRootPath), AppConsts.GAMES_ROOT_PATHS);
+				xmlGRP.AddXmlElem(CreateGRPElem(gameRootPath), XmlConsts.GAMES_ROOT_PATHS);
 
 			xmlGRP.Save();
 		}
@@ -107,9 +107,9 @@ namespace MudRunnerModManager.Common.AppRepo
 
 		private XmlElem CreateGRPElem(GameRootPath gameRootPath)
 		{
-			XmlElem grpElem = new(AppConsts.GAME);
-			grpElem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, gameRootPath.Path));
-			grpElem.Attributes.Add(new XmlElemAttribute(AppConsts.NAME, gameRootPath.GameName));
+			XmlElem grpElem = new(XmlConsts.GAME);
+			grpElem.Attributes.Add(new XmlElemAttribute(XmlConsts.PATH, gameRootPath.Path));
+			grpElem.Attributes.Add(new XmlElemAttribute(XmlConsts.NAME, gameRootPath.GameName));
 			return grpElem;
 		}
 
@@ -117,9 +117,9 @@ namespace MudRunnerModManager.Common.AppRepo
 		{
 			bool SearchByGameName(XmlElem elem)
 			{
-				if (elem.Name == AppConsts.GAME)
+				if (elem.Name == XmlConsts.GAME)
 				{
-					var gameNameAttr = elem.Attributes.FirstOrDefault(atr => atr.Name == AppConsts.NAME);
+					var gameNameAttr = elem.Attributes.FirstOrDefault(atr => atr.Name == XmlConsts.NAME);
 					if (gameNameAttr != null && gameNameAttr.Value == gameName)
 						return true;
 				}

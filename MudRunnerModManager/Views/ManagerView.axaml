@@ -13,9 +13,39 @@
 		<vm:ManagerViewModel />
 	</Design.DataContext>
 
-	<Grid RowDefinitions="auto, *, auto"
+	<Grid RowDefinitions="auto, auto, *, auto"
 		  IsEnabled="{Binding !IsBusy}">
-		<Button HorizontalAlignment="Stretch"
+		<Border BorderBrush="Gray"
+				BorderThickness="2"
+				Margin="2,2,2,0">
+			<ListBox ItemsSource="{Binding GameInfos}"
+					 SelectedItem="{Binding SelectedGameInfo}"
+					 Margin="2">
+				<ListBox.Styles>				
+					<Style Selector="ListBoxItem">
+						<Setter Property="Padding" Value="4"/>				
+					</Style>
+					<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+						<Setter Property="Background" Value="DarkSlateGray"/>
+					</Style>
+				</ListBox.Styles>
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel Orientation="Horizontal" Background="{DynamicResource SystemRegionBrush}"/>
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Image Source="{Binding Image}"
+							   ToolTip.Tip="{Binding GameName}"
+							   Width="50"/>							
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>			
+		</Border>
+		
+		<Button Grid.Row="1" 
+				HorizontalAlignment="Stretch"
 				IsVisible="{Binding !IsShowPathInput}"
 				IsEnabled="{Binding !IsShowPathInput}"
 				Command="{Binding ShowRootPathInputCommand}"
@@ -23,14 +53,16 @@
 				HorizontalContentAlignment="Center"
 				VerticalContentAlignment="Top"
 				Height="22"
+				Margin="2,0,2,0"
 >
 			<Button.Styles>
 				<Style Selector="Button">
 					<Setter Property="Template">
 						<ControlTemplate>
-							<Border BorderThickness="1,0,1,2"
+							<Border BorderThickness="2,0,2,2"
 									CornerRadius="0,5"
-									Background="DarkSlateGray">
+									Background="DarkSlateGray"
+									BorderBrush="Gray">
 								<TextBlock Text="{TemplateBinding Content}" 
 										   Foreground="{DynamicResource TextControlForeground}"
 										   HorizontalAlignment="Center"
@@ -50,7 +82,7 @@
 		</Button>
 		
 		<TabControl Margin="-12,0,-12,0"
-					Grid.Row="1"
+					Grid.Row="2"
 					IsVisible="{Binding !IsShowPathInput}"
 					IsEnabled="{Binding !IsShowPathInput}">
 			<TabControl.ItemsPanel>
@@ -76,7 +108,7 @@
 		</TabControl>
 
 		<views:GameRootPathView DataContext="{Binding GameRootPathVM}"
-								Grid.Row="1"
+								Grid.Row="2"
 								IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
 																	AncestorType={x:Type UserControl},
 																	AncestorLevel=1} Path=DataContext.IsShowPathInput}"
@@ -84,7 +116,7 @@
 																	AncestorType={x:Type UserControl},
 																	AncestorLevel=1}, Path=DataContext.IsShowPathInput}"/>
 
-		<Border Grid.Row="2"
+		<Border Grid.Row="3"
 				BorderThickness="2"
 				BorderBrush="Gray"
 				CornerRadius="5,0"
@@ -153,7 +185,7 @@
 			</Grid>			
 		</Border>
 
-		<progRing:ProgressRing Grid.RowSpan="2"
+		<progRing:ProgressRing Grid.RowSpan="3"
 			Width="80"
 			Height="80"
 			IsActive="{Binding IsBusy}"

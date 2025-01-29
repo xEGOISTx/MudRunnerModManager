@@ -1,280 +1,237 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using MudRunnerModManager.Common.XmlWorker;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.IO;
+//using System.Linq;
+//using System.Threading.Tasks;
+//using MudRunnerModManager.Common.XmlWorker;
 
-namespace MudRunnerModManager.Common
-{
-    public class ConfigManager
-    {
-		public void AddModPath(DirectoryInfo modDir, FileInfo config)
-		{
-			Execute(modDir, config, Add);
-		}
+//namespace MudRunnerModManager.Common
+//{
+//    public class ConfigManager
+//    {
+//		public void AddModPath(DirectoryInfo modDir, FileInfo config)
+//		{
+//			Execute(modDir, config, Add);
+//		}
 
-		public void DeleteModPath(DirectoryInfo modDir, FileInfo config)
-		{
-			Execute(modDir, config, Delete);
-		}
+//		public void DeleteModPath(DirectoryInfo modDir, FileInfo config)
+//		{
+//			Execute(modDir, config, Delete);
+//		}
 
-		public async Task AddModPathAsync(DirectoryInfo modDir, FileInfo config)
-        {
-			await Task.Run(() => AddModPath(modDir, config));
-        }
+//		//public async Task AddModPathAsync(DirectoryInfo modDir, FileInfo config)
+//  //      {
+//		//	await Task.Run(() => AddModPath(modDir, config));
+//  //      }
 
-        public async Task DeleteModPathAsync(DirectoryInfo modDir, FileInfo config)
-        {
-			await Task.Run(() => DeleteModPath(modDir, config));
-        }
+//  //      public async Task DeleteModPathAsync(DirectoryInfo modDir, FileInfo config)
+//  //      {
+//		//	await Task.Run(() => DeleteModPath(modDir, config));
+//  //      }
 
-		public void RenameMod(DirectoryInfo modDir, string newModName, FileInfo config)
-		{
-			XmlDoc xmlConfig = new(config.FullName);
-			if (!xmlConfig.Exists)
-				return;
+//		public void RenameMod(DirectoryInfo modDir, string newModName, FileInfo config)
+//		{
+//			XmlDoc xmlConfig = new(config.FullName);
+//			if (!xmlConfig.Exists)
+//				return;
 
-			xmlConfig.Load();
+//			xmlConfig.Load();
 
-			ReplaceMediaPaths(xmlConfig,
-				$@"{modDir.Parent?.Name}\{modDir.Name}",
-				target => target.Replace(modDir.Name, newModName),
-				true);
+//			ReplaceMediaPaths(xmlConfig,
+//				$@"{modDir.Parent?.Name}\{modDir.Name}",
+//				target => target.Replace(modDir.Name, newModName),
+//				true);
 
-			SaveConfig(xmlConfig);
-		}
-
-
-		public async Task RenameModAsync(DirectoryInfo modDir, string newModName, FileInfo config)
-        {
-            await Task.Run(() => RenameMod(modDir, newModName, config));
-        }
-
-        public void RenameChapter(DirectoryInfo chapter, string newName, FileInfo config)
-        {
-			XmlDoc xmlConfig = new(config.FullName);
-			if (!xmlConfig.Exists)
-				return;
-
-			xmlConfig.Load();
-
-			ReplaceMediaPaths(
-				xmlConfig,
-				$@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}",
-				target => target.Replace(chapter.Name, newName),
-				true);
-
-			SaveConfig(xmlConfig);
-		}
-
-		public async Task RenameChapterAsync(DirectoryInfo chapter, string newName, FileInfo config)
-        {
-            await Task.Run(() =>
-            {
-				RenameChapter(chapter, newName, config);
-			});
-        }
-
-		public void ChangeModChapter(DirectoryInfo modDir, DirectoryInfo newChapter, FileInfo config)
-		{
-			XmlDoc xmlConfig = new(config.FullName);
-			if (!xmlConfig.Exists)
-				return;
-
-			xmlConfig.Load();
-
-			var targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Parent.Name}\{modDir.Name}";
-			var newVal = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{newChapter.Name}\{modDir.Name}";
-
-			if (newChapter.Name == AppConsts.MODS_ROOT_DIR)
-			{
-				newVal = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}";
-			}
-
-			if (modDir.Parent.Name == AppConsts.MODS_ROOT_DIR)
-			{
-				targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modDir.Name}";
-			}
-
-			ReplaceMediaPaths(
-				xmlConfig,
-				targetPath,
-				target => newVal,
-				true);
-
-			SaveConfig(xmlConfig);
-		}
-
-		public void DeleteChapter(DirectoryInfo chapter, FileInfo config)
-		{
-			XmlDoc xmlConfig = new(config.FullName);
-			if (!xmlConfig.Exists)
-				return;
-
-			xmlConfig.Load();
-
-			var chapterXmlElems = xmlConfig
-				.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
-				&& elem.Attributes.Count > 0
-				&& elem.Attributes.First().Name == AppConsts.PATH
-				&& elem.Attributes.First().Value.Contains($@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{chapter.Name}"));
-
-			if (chapterXmlElems.Count == 0)
-				return;
-
-			foreach (var xmlElem in chapterXmlElems)
-			{
-				xmlConfig.RemoveXmlElem(xmlElem);
-			}
-
-			SaveConfig(xmlConfig);
-		}
-
-		public async Task DeleteChapterAsync(DirectoryInfo chapter, FileInfo config)
-        {
-            await Task.Run(() =>
-            {
-				DeleteChapter(chapter, config);
-			});
-        }
+//			SaveConfig(xmlConfig);
+//		}
 
 
-  //      public async Task ReplaseOldModsRootDirNameToNewName(FileInfo config)
-  //      {
-		//	await Task.Run(async () =>
-		//	{
-		//		XmlDoc xmlConfig = new(config.FullName);
-		//		if (!xmlConfig.Exists)
-		//			return;
+//		//public async Task RenameModAsync(DirectoryInfo modDir, string newModName, FileInfo config)
+//  //      {
+//  //          await Task.Run(() => RenameMod(modDir, newModName, config));
+//  //      }
 
-		//		await xmlConfig.LoadAsync();
+//        public void RenameChapter(DirectoryInfo chapter, string newName, FileInfo config)
+//        {
+//			XmlDoc xmlConfig = new(config.FullName);
+//			if (!xmlConfig.Exists)
+//				return;
 
-		//		ReplaceMediaPaths(
-		//			xmlConfig,
-		//			$@"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR_OLD}",
-		//			target => target.Replace(AppConsts.MODS_ROOT_DIR_OLD, AppConsts.MODS_ROOT_DIR),
-		//			true);
+//			xmlConfig.Load();
 
-		//		await SaveConfigAsync(xmlConfig);
-		//	});
-		//}
+//			ReplaceMediaPaths(
+//				xmlConfig,
+//				$@"{AppConsts.MEDIA}\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{chapter.Name}",
+//				target => target.Replace(chapter.Name, newName),
+//				true);
 
-        private bool Add(XmlDoc xmlConfig, XmlElem elem)
-        {
-            if (xmlConfig.IsPresentElem(elem))
-                return false;
+//			SaveConfig(xmlConfig);
+//		}
 
-            xmlConfig.AddXmlElem(elem, AppConsts.CONFIG);
-            return true;
-        }
+//		//public async Task RenameChapterAsync(DirectoryInfo chapter, string newName, FileInfo config)
+//  //      {
+//  //          await Task.Run(() =>
+//  //          {
+//		//		RenameChapter(chapter, newName, config);
+//		//	});
+//  //      }
 
-        private bool Delete(XmlDoc xmlConfig, XmlElem elem)
-        {
-            if (!xmlConfig.IsPresentElem(elem))
-                return false;
+//		public void ChangeModChapter(DirectoryInfo modDir, DirectoryInfo newChapter, FileInfo config)
+//		{
+//			XmlDoc xmlConfig = new(config.FullName);
+//			if (!xmlConfig.Exists)
+//				return;
 
-            xmlConfig.RemoveXmlElem(elem);
-            return true;
-        }
+//			xmlConfig.Load();
 
-		private void Execute(DirectoryInfo modDir, FileInfo config, Func<XmlDoc, XmlElem, bool> action)
-		{
-			XmlDoc xmlConfig = new(config.FullName);
-			if (!xmlConfig.Exists)
-				return;
+//			var targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{modDir.Parent.Name}\{modDir.Name}";
+//			var newVal = $@"{AppConsts.MEDIA}\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{newChapter.Name}\{modDir.Name}";
 
-			xmlConfig.Load();
+//			if (newChapter.Name == AppConsts.MR_MODS_ROOT_DIR_NAME)
+//			{
+//				newVal = $@"{AppConsts.MEDIA}\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{modDir.Name}";
+//			}
 
-			string path = AppConsts.MEDIA;
+//			if (modDir.Parent.Name == AppConsts.MR_MODS_ROOT_DIR_NAME)
+//			{
+//				targetPath = $@"{AppConsts.MEDIA}\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{modDir.Name}";
+//			}
 
-			if (modDir.Parent.Name != AppConsts.MODS_ROOT_DIR)
-			{
-				path += $@"\{AppConsts.MODS_ROOT_DIR}\{modDir.Parent.Name}\{modDir.Name}";
-			}
-			else
-			{
-				path += $@"\{modDir.Parent.Name}\{modDir.Name}";
-			}
+//			ReplaceMediaPaths(
+//				xmlConfig,
+//				targetPath,
+//				target => newVal,
+//				true);
 
-			var elem = new XmlElem(AppConsts.MEDIA_PATH);
-			elem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, path));
+//			SaveConfig(xmlConfig);
+//		}
 
-			if (!action(xmlConfig, elem))
-				return;
+//		public void DeleteChapter(DirectoryInfo chapter, FileInfo config)
+//		{
+//			XmlDoc xmlConfig = new(config.FullName);
+//			if (!xmlConfig.Exists)
+//				return;
 
-			SaveConfig(xmlConfig);
-		}
+//			xmlConfig.Load();
 
+//			var chapterXmlElems = xmlConfig
+//				.GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
+//				&& elem.Attributes.Count > 0
+//				&& elem.Attributes.First().Name == AppConsts.PATH
+//				&& elem.Attributes.First().Value.Contains($@"{AppConsts.MEDIA}\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{chapter.Name}"));
 
-   //     private async Task SaveConfigAsync(XmlDoc xmlConfig)
-   //     {
-   //         string curPath = xmlConfig.Path;
-   //         if(!AppPaths.AppTempDir.Exists)
-   //         {
-			//	AppPaths.AppTempDir.Create();
-			//}
-   //         await xmlConfig.SaveAsync(@$"{AppPaths.AppTempDir}\{AppConsts.CONFIG_XML}");
-   //         await xmlConfig.CopyAsync(curPath, true);
-   //         xmlConfig.Delete();
-   //     }
+//			if (chapterXmlElems.Count == 0)
+//				return;
 
-        private void SaveConfig(XmlDoc xmlConfig)
-        {
-			string curPath = xmlConfig.Path;
-			if (!AppPaths.AppTempDir.Exists)
-			{
-				AppPaths.AppTempDir.Create();
-			}
-			xmlConfig.Save(@$"{AppPaths.AppTempDir}\{AppConsts.CONFIG_XML}");
-			xmlConfig.Copy(curPath, true);
-			xmlConfig.Delete();
-		}
+//			foreach (var xmlElem in chapterXmlElems)
+//			{
+//				xmlConfig.RemoveXmlElem(xmlElem);
+//			}
 
+//			SaveConfig(xmlConfig);
+//		}
 
-		//private XmlElem CreateMediaPathElement(string modName)
-		//{
-		//    var elem = new XmlElem(AppConsts.MEDIA_PATH);
-		//    elem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, @$"{AppConsts.MEDIA}\{AppConsts.MODS_ROOT_DIR}\{modName}"));
-		//    return elem;
-		//}
+//		//public async Task DeleteChapterAsync(DirectoryInfo chapter, FileInfo config)
+//  //      {
+//  //          await Task.Run(() =>
+//  //          {
+//		//		DeleteChapter(chapter, config);
+//		//	});
+//  //      }
 
+//        private bool Add(XmlDoc xmlConfig, XmlElem elem)
+//        {
+//            if (xmlConfig.IsPresentElem(elem))
+//                return false;
 
-		private void ReplaceMediaPaths(
-            XmlDoc doc, 
-            string target, 
-            Func<string, string> repFunc, 
-            bool contains)
-        {
+//            xmlConfig.AddXmlElem(elem, AppConsts.CONFIG);
+//            return true;
+//        }
 
-            Func<string, string, bool> comparator = (value, target) => value == target;
-            if (contains)
-            {
-				comparator = (value, target) => value.Contains(target);
-			}
+//        private bool Delete(XmlDoc xmlConfig, XmlElem elem)
+//        {
+//            if (!xmlConfig.IsPresentElem(elem))
+//                return false;
 
-			var xmlElems = doc
-                .GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
-                && elem.Attributes.Count == 1
-                && elem.Attributes.First().Name == AppConsts.PATH
-                && comparator(elem.Attributes.First().Value, target));
+//            xmlConfig.RemoveXmlElem(elem);
+//            return true;
+//        }
 
-            if (xmlElems.Count < 1)
-                return;
+//		private void Execute(DirectoryInfo modDir, FileInfo config, Func<XmlDoc, XmlElem, bool> action)
+//		{
+//			XmlDoc xmlConfig = new(config.FullName);
+//			if (!xmlConfig.Exists)
+//				return;
 
-			List<XmlElem> replacedXmlElems = [];
+//			xmlConfig.Load();
 
-			foreach ( var elem in xmlElems )
-            {
-                string newVal = repFunc(elem.Attributes.First().Value);
+//			string path = AppConsts.MEDIA;
 
-				var newElem = new XmlElem(AppConsts.MEDIA_PATH);
-				newElem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, newVal));
-				replacedXmlElems.Add(newElem);
-				doc.RemoveXmlElem(elem);
-			}
+//			if (modDir.Parent.Name != AppConsts.MR_MODS_ROOT_DIR_NAME)
+//			{
+//				path += $@"\{AppConsts.MR_MODS_ROOT_DIR_NAME}\{modDir.Parent.Name}\{modDir.Name}";
+//			}
+//			else
+//			{
+//				path += $@"\{modDir.Parent.Name}\{modDir.Name}";
+//			}
 
-            doc.AddRangeXmlElems(replacedXmlElems, AppConsts.CONFIG);
-		}
-    }
-}
+//			var elem = new XmlElem(AppConsts.MEDIA_PATH);
+//			elem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, path));
+
+//			if (!action(xmlConfig, elem))
+//				return;
+
+//			SaveConfig(xmlConfig);
+//		}
+
+//        private void SaveConfig(XmlDoc xmlConfig)
+//        {
+//			string curPath = xmlConfig.Path;
+//			if (!AppPaths.AppTempDir.Exists)
+//			{
+//				AppPaths.AppTempDir.Create();
+//			}
+//			xmlConfig.Save(@$"{AppPaths.AppTempDir}\{AppConsts.CONFIG_XML}");
+//			xmlConfig.Copy(curPath, true);
+//			xmlConfig.Delete();
+//		}
+
+//		private void ReplaceMediaPaths(
+//            XmlDoc doc, 
+//            string target, 
+//            Func<string, string> repFunc, 
+//            bool contains)
+//        {
+
+//            Func<string, string, bool> comparator = (value, target) => value == target;
+//            if (contains)
+//            {
+//				comparator = (value, target) => value.Contains(target);
+//			}
+
+//			var xmlElems = doc
+//                .GetXmlItems<XmlElem>(elem => elem.Name == AppConsts.MEDIA_PATH
+//                && elem.Attributes.Count == 1
+//                && elem.Attributes.First().Name == AppConsts.PATH
+//                && comparator(elem.Attributes.First().Value, target));
+
+//            if (xmlElems.Count < 1)
+//                return;
+
+//			List<XmlElem> replacedXmlElems = [];
+
+//			foreach ( var elem in xmlElems )
+//            {
+//                string newVal = repFunc(elem.Attributes.First().Value);
+
+//				var newElem = new XmlElem(AppConsts.MEDIA_PATH);
+//				newElem.Attributes.Add(new XmlElemAttribute(AppConsts.PATH, newVal));
+//				replacedXmlElems.Add(newElem);
+//				doc.RemoveXmlElem(elem);
+//			}
+
+//            doc.AddRangeXmlElems(replacedXmlElems, AppConsts.CONFIG);
+//		}
+//    }
+//}
