@@ -15,7 +15,6 @@ using MudRunnerModManager.AdditionalWindows.Dialogs;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.ObjectModel;
-using MudRunnerModManager.Common.AppRepo;
 
 namespace MudRunnerModManager.ViewModels
 {
@@ -34,7 +33,7 @@ namespace MudRunnerModManager.ViewModels
 			EventTube.EventPushed += EventTube_EventPushed;
 
 			var canExec = this.WhenAnyValue(vm => vm.SelectedMod, sm => sm as ModViewModel != null);
-			var canExecRelocate = this.WhenAnyValue(vm => vm.SelectedMod, sm=> sm as ModViewModel != null && _chapters.Count > 0);
+			var canExecRelocate = this.WhenAnyValue(vm => vm.SelectedMod, sm=> sm as ModViewModel != null && _chapters.Count > 1);
 			AddModCommand = ReactiveCommand.Create(AddMod);
 			DeleteModCommand = ReactiveCommand.Create(DeleteSelectedMod, canExec);
 			RenameModCommand = ReactiveCommand.Create(RenameMod, canExec);
